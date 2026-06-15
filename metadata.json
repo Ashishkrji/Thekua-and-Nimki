@@ -1,0 +1,6 @@
+{
+  "name": "Maati Traditional Snacks",
+  "description": "Premium D2C Indian traditional snacks brand selling authentic, handmade, hygienic Thekua and Crispy Nimki prepared with desi ghee and organic jaggery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

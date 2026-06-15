@@ -1,0 +1,336 @@
+import React, { useState } from 'react';
+import { ShoppingBag, ArrowLeft, Send, CheckCircle2, Award, Clock } from 'lucide-react';
+import { CartItem, Language, Order } from '../types';
+import { TRANSLATIONS } from '../data';
+
+interface CheckoutProps {
+  language: Language;
+  cart: CartItem[];
+  onBack: () => void;
+  onClearCart: () => void;
+}
+
+export default function Checkout({ language, cart, onBack, onClearCart }: CheckoutProps) {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Online'>('COD');
+  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successOrder, setSuccessOrder] = useState<Order | null>(null);
+
+  const t = TRANSLATIONS[language];
+
+  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const isFreeDelivery = subtotal >= 499;
+  const shippingCharge = subtotal > 0 && !isFreeDelivery ? 60 : 0;
+  
+  // Hardcoded promo code discount fallback for simplicity matching Cart.tsx
+  const discount = subtotal >= 499 ? 50 : 0;
+  const total = subtotal + shippingCharge - discount;
+
+  const validate = () => {
+    const tempErrors: Record<string, string> = {};
+    if (!name.trim()) tempErrors.name = language === 'en' ? 'Name is required' : 'नाम डालना आवश्यक है';
+    if (!phone.trim() || phone.length < 10) tempErrors.phone = language === 'en' ? 'Provide 10-digit mobile number' : '१० अंकों का मोबाइल नंबर डालें';
+    if (!address.trim()) tempErrors.address = language === 'en' ? 'Full residential address required' : 'पूरा पता डालना आवश्यक है';
+    if (!city.trim()) tempErrors.city = language === 'en' ? 'City is required' : 'शहर का नाम आवश्यक है';
+    if (!pincode.trim() || pincode.length !== 6) tempErrors.pincode = language === 'en' ? 'Invalid 6-digit Pincode' : '६ अंकों का सही पिनकोड डालें';
+    
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  const handlePlaceOrder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    // Build Mock Order
+    const cleanOrder: Order = {
+      id: `MAATI-${Math.floor(100000 + Math.random() * 900000)}`,
+      items: [...cart],
+      customerDetails: { name, phone, address, city, pincode },
+      paymentMethod,
+      status: 'ordered',
+      total,
+      date: new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })
+    };
+
+    setSuccessOrder(cleanOrder);
+  };
+
+  const resetAll = () => {
+    onClearCart();
+    onBack();
+  };
+
+  if (successOrder) {
+    return (
+      <div id="checkout-view" className="py-12 bg-[#FAF6EE] min-h-screen">
+        <div className="max-w-2xl mx-auto px-4">
+          
+          {/* Order Success Card */}
+          <div className="bg-[#FBF9F4] rounded-3xl border border-[#EADCC6] p-8 text-center space-y-6 shadow-xl relative overflow-hidden">
+            
+            {/* Background design accents */}
+            <div className="absolute top-[-10%] right-[-10%] w-48 h-48 rounded-full bg-[#0F766E]/5 pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-48 h-48 rounded-full bg-[#B45309]/5 pointer-events-none" />
+
+            {/* Sparkles big success icon */}
+            <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-700 mx-auto border border-emerald-500/25">
+              <CheckCircle2 className="w-10 h-10 fill-emerald-600 text-white" />
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl font-serif font-black text-[#3F2E1E]">
+                {t.order_success_title}
+              </h1>
+              <p className="text-sm font-semibold text-[#0F766E] uppercase tracking-wider">
+                Order ID: {successOrder.id}
+              </p>
+              <p className="text-xs sm:text-sm text-[#857252] leading-relaxed max-w-md mx-auto">
+                {t.order_success_sub}
+              </p>
+            </div>
+
+            {/* Receipt Summary */}
+            <div className="p-5 bg-[#FAF6EE] rounded-2xl border border-[#EADCC6] text-left space-y-3 font-sans">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#B45309] border-b border-[#EADCC6]/60 pb-2">
+                Order Dispatch Summary
+              </h3>
+              <div className="space-y-1.5 text-xs text-[#5C4D3C]">
+                <p><strong>Deliver To:</strong> {successOrder.customerDetails.name}</p>
+                <p><strong>Contact Direct:</strong> +91 {successOrder.customerDetails.phone}</p>
+                <p><strong>Postal Address:</strong> {successOrder.customerDetails.address}, {successOrder.customerDetails.city} - {successOrder.customerDetails.pincode}</p>
+                <p><strong>Payment Mode:</strong> {successOrder.paymentMethod} (Pay upon safe home dispatch)</p>
+                <p><strong>Estimated Total Amount:</strong> <strong className="text-base text-[#B45309] font-mono">₹{successOrder.total}</strong></p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <button
+                onClick={resetAll}
+                className="w-full h-11 bg-[#B45309] hover:bg-[#853A00] text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow cursor-pointer focus:outline-none"
+              >
+                Back to Kitchen
+              </button>
+
+              <a
+                href={`https://api.whatsapp.com/send?phone=918210612345&text=Namaste%20Maati,%20I%20placed%20order%20${successOrder.id}.%20Please%20confirm!`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full h-11 bg-[#0F766E] hover:bg-[#08534C] text-white rounded-xl font-sans font-bold text-xs flex items-center justify-center gap-1.5 border border-[#0F766E] shadow transition-colors"
+                title="Send confirmation direct to grandma"
+              >
+                <span>Notify via WhatsApp</span>
+              </a>
+            </div>
+
+            {/* Small traditional reassurance footer */}
+            <div className="flex items-center justify-center gap-1.5 pt-4 text-[10px] text-[#8F7C5D] font-mono border-t border-[#EADCC6]/40 uppercase tracking-widest">
+              <Clock className="w-3.5 h-3.5" /> Ordered prepared fresh in tomorrow morning batch
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div id="checkout-view" className="py-12 bg-[#FAF6EE] min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Back header */}
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-sm font-bold text-[#B45309] hover:text-[#853A00] mb-8 focus:outline-none cursor-pointer"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Modify snack basket</span>
+        </button>
+
+        {/* Master split screen */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* LEFT COLUMN: Residence Form details */}
+          <form onSubmit={handlePlaceOrder} className="lg:col-span-7 bg-[#FBF9F4] p-6 sm:p-8 rounded-3xl border border-[#EADCC6] shadow-sm space-y-6">
+            
+            <h2 className="text-xl font-serif font-black text-[#3F2E1E] border-b border-[#EADCC6]/60 pb-3">
+              {t.checkout_title}
+            </h2>
+
+            {/* Full Name */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#5C4D3C] uppercase tracking-wide">Customer full name</label>
+              <input
+                type="text"
+                placeholder="e.g. Ramesh Kumar"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={`w-full bg-white border rounded-xl px-4 py-3 text-xs sm:text-sm text-[#3F2E1E] focus:outline-none focus:border-[#B45309] ${errors.name ? 'border-red-500 bg-red-500/5' : 'border-[#EADCC6]'}`}
+              />
+              {errors.name && <p className="text-[10px] text-red-500 font-bold">{errors.name}</p>}
+            </div>
+
+            {/* Mobile Number */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#5C4D3C] uppercase tracking-wide">10-Digit Mobile Number (WhatsApp preferred)</label>
+              <div className="flex">
+                <span className="bg-[#EADCC6]/40 border border-[#EADCC6] border-r-0 rounded-l-xl px-3 flex items-center text-xs font-bold font-mono text-[#5C4D3C] leading-none">+91</span>
+                <input
+                  type="text"
+                  maxLength={10}
+                  placeholder="e.g. 9876543210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                  className={`w-full bg-white border rounded-r-xl px-4 py-3 text-xs sm:text-sm text-[#3F2E1E] focus:outline-none focus:border-[#B45309] ${errors.phone ? 'border-red-500 bg-red-500/5' : 'border-[#EADCC6]'}`}
+                />
+              </div>
+              {errors.phone && <p className="text-[10px] text-red-500 font-bold">{errors.phone}</p>}
+            </div>
+
+            {/* Street / Address details */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#5C4D3C] uppercase tracking-wide">Complete Residential Address</label>
+              <textarea
+                rows={3}
+                placeholder="Flat No, House name, Colony/Street details, Nearby landmarks"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className={`w-full bg-white border rounded-xl px-4 py-3 text-xs sm:text-sm text-[#3F2E1E] focus:outline-none focus:border-[#B45309] ${errors.address ? 'border-red-500 bg-red-500/5' : 'border-[#EADCC6]'}`}
+              />
+              {errors.address && <p className="text-[10px] text-red-500 font-bold">{errors.address}</p>}
+            </div>
+
+            {/* City & PIN code */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#5C4D3C] uppercase tracking-wide">City</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Patna"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className={`w-full bg-white border rounded-xl px-4 py-3 text-xs sm:text-sm text-[#3F2E1E] focus:outline-none focus:border-[#B45309] ${errors.city ? 'border-red-500 bg-red-500/5' : 'border-[#EADCC6]'}`}
+                />
+                {errors.city && <p className="text-[10px] text-red-500 font-bold">{errors.city}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#5C4D3C] uppercase tracking-wide">6-Digit Pincode</label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="e.g. 800001"
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                  className={`w-full bg-white border rounded-xl px-4 py-3 text-xs sm:text-sm text-[#3F2E1E] focus:outline-none focus:border-[#B45309] ${errors.pincode ? 'border-red-500 bg-red-500/5' : 'border-[#EADCC6]'}`}
+                />
+                {errors.pincode && <p className="text-[10px] text-red-500 font-bold">{errors.pincode}</p>}
+              </div>
+            </div>
+
+            {/* Payment Strategy Choice */}
+            <div className="space-y-2 pt-2">
+              <label className="block text-xs font-bold text-[#5C4D3C] uppercase tracking-wide">Select dispatch payment mode</label>
+              
+              <div className="grid grid-cols-2 gap-4">
+                
+                {/* Cash on Delivery option block */}
+                <div 
+                  onClick={() => setPaymentMethod('COD')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${paymentMethod === 'COD' ? 'border-[#B45309] bg-[#EADCC6]/10' : 'border-[#EADCC6]/40 hover:border-[#EADCC6] bg-white'}`}
+                >
+                  <p className="text-xs font-extrabold text-[#3F2E1E]">💵 Pay on delivery</p>
+                  <p className="text-[10px] text-[#857252] leading-normal mt-1">Pay with Cash or UPI once courier reaches your door.</p>
+                </div>
+
+                {/* Direct payment option block */}
+                <div 
+                  onClick={() => setPaymentMethod('Online')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${paymentMethod === 'Online' ? 'border-[#B45309] bg-[#EADCC6]/10' : 'border-[#EADCC6]/40 hover:border-[#EADCC6] bg-white'}`}
+                >
+                  <p className="text-xs font-extrabold text-[#3F2E1E]">⚡ Pay Online securely</p>
+                  <p className="text-[10px] text-[#857252] leading-normal mt-1">UPI, Cards, Wallets, netbanking gateway mockups.</p>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Place Order submit button */}
+            <button
+              type="submit"
+              className="w-full h-12 bg-[#B45309] hover:bg-[#853A00] text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow hover:shadow-md transition-all cursor-pointer focus:outline-none"
+            >
+              🚀 Confirm dispatch parameters (Placing Order)
+            </button>
+
+          </form>
+
+
+          {/* RIGHT COLUMN: Right receipt summary items block */}
+          <div className="lg:col-span-5 bg-white p-6 rounded-3xl border border-[#EADCC6] shadow-sm space-y-6">
+            
+            <h3 className="text-lg font-serif font-black text-[#3F2E1E] border-b border-[#EADCC6]/60 pb-3">
+              Basket Check ({cart.length})
+            </h3>
+
+            {/* List summary */}
+            <div className="space-y-4 max-h-64 overflow-y-auto pr-2 divide-y divide-[#EADCC6]/30">
+              {cart.map((item) => (
+                <div key={item.product.id} className="flex gap-3 pt-3 first:pt-0 items-start text-xs">
+                  <img src={item.product.images[0]} alt={item.product.name} className="w-10 h-10 rounded-lg object-cover bg-amber-50" referrerPolicy="no-referrer" />
+                  <div className="flex-1">
+                    <p className="font-serif font-bold text-[#3F2E1E] leading-tight">{item.product.name}</p>
+                    <p className="text-[10px] font-mono text-[#857252] mt-0.5">₹{item.product.price} x {item.quantity}</p>
+                  </div>
+                  <span className="font-mono font-black text-[#3F2E1E]">₹{item.product.price * item.quantity}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Pricing receipt card */}
+            <div className="pt-4 border-t border-[#EADCC6] space-y-2.5 text-xs">
+              <div className="flex justify-between text-[#857252]">
+                <span>Basket Net value</span>
+                <span className="font-mono">₹{subtotal}</span>
+              </div>
+              
+              {discount > 0 && (
+                <div className="flex justify-between text-emerald-700 font-bold">
+                  <span>MAATI50 Coupon</span>
+                  <span className="font-mono">-₹{discount}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-[#857252]">
+                <span>Courier & Nitrogen Care Packaging</span>
+                <span className="font-mono">{isFreeDelivery ? 'FREE' : `₹${shippingCharge}`}</span>
+              </div>
+
+              <div className="border-t border-[#EADCC6]/60 pt-2.5 flex justify-between text-[#3F2E1E] text-base font-black">
+                <span>Total Payable</span>
+                <span className="font-mono text-[#B45309]">₹{total}</span>
+              </div>
+            </div>
+
+            {/* Safety badge assurance card */}
+            <div className="p-4 rounded-xl bg-[#FAF6EE] border border-[#EADCC6] space-y-2 text-xs">
+              <span className="font-sans font-bold text-[#0F766E] flex items-center gap-1">🛡️ Safe-Packed Guarantee</span>
+              <p className="text-[11px] text-[#5C4D3C] leading-normal font-sans">
+                Our team packages snacks in customized food-grade nitrogen-flushed laminates which keep moisture 100% locked out. Safe & untouched.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}

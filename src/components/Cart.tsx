@@ -1,0 +1,315 @@
+import React, { useState } from 'react';
+import { X, Trash2, Plus, Minus, ArrowRight, Sparkles, ShoppingBag, Send } from 'lucide-react';
+import { CartItem, Language } from '../types';
+import { TRANSLATIONS } from '../data';
+import { motion, AnimatePresence } from 'motion/react';
+
+interface CartProps {
+  isOpen: boolean;
+  onClose: () => void;
+  cart: CartItem[];
+  onUpdateQuantity: (productId: string, quantity: number) => void;
+  onRemoveItem: (productId: string) => void;
+  onCheckout: () => void;
+  language: Language;
+}
+
+export default function Cart({
+  isOpen,
+  onClose,
+  cart,
+  onUpdateQuantity,
+  onRemoveItem,
+  onCheckout,
+  language
+}: CartProps) {
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [promoAppliedMsg, setPromoAppliedMsg] = useState('');
+
+  const t = TRANSLATIONS[language];
+
+  // Calculations
+  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const isFreeDelivery = subtotal >= 499;
+  const shippingCharge = subtotal > 0 && !isFreeDelivery ? 60 : 0;
+  const total = subtotal + shippingCharge - discount;
+
+  const handleApplyPromo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (promoCode.trim().toUpperCase() === 'MAATI50') {
+      if (subtotal < 499) {
+        setPromoAppliedMsg(language === 'en' ? '⚠️ Promo code is valid only for orders above ₹499!' : '⚠️ कूपन कोड केवल ₹४९९ से ऊपर के आर्डर पर मान्य है!');
+        setDiscount(0);
+      } else {
+        setDiscount(50);
+        setPromoAppliedMsg(language === 'en' ? '✓ Promo "MAATI50" Applied! ₹50 Discounted.' : '✓ कूपन कोड "MAATI50" सफल रहा! ₹५० की छूट मिली।');
+      }
+    } else {
+      setPromoAppliedMsg(language === 'en' ? '❌ Invalid Promo Code!' : '❌ कूपन कोड अमान्य है!');
+      setDiscount(0);
+    }
+  };
+
+  // Pre-filled WhatsApp checkout message generator
+  const triggerWhatsAppOrder = () => {
+    if (cart.length === 0) return;
+
+    let text = `*🌿 NEW ORDER REQUEST - MAATI SNACKS 🌿*\n`;
+    text += `━━━━━━━━━━━━━━━━━\n`;
+    text += `Namaste Maati Team, I would like to place an order for custom handcrafted snacks:\n\n`;
+
+    cart.forEach((item, index) => {
+      text += `*${index + 1}. ${item.product.name}*\n`;
+      text += `   Qty: ${item.quantity} [${item.product.unit}]\n`;
+      text += `   Price: ₹${item.product.price} x ${item.quantity} = *₹${item.product.price * item.quantity}*\n\n`;
+    });
+
+    text += `━━━━━━━━━━━━━━━━━\n`;
+    text += `*Subtotal:* ₹${subtotal}\n`;
+    if (discount > 0) {
+      text += `*Promo Discount:* -₹${discount} (MAATI50)\n`;
+    }
+    text += `*Delivery Care:* ${isFreeDelivery ? 'FREE Shipping' : `₹${shippingCharge}`}\n`;
+    text += `*Estimated Total Amount:* *₹${total}*\n`;
+    text += `━━━━━━━━━━━━━━━━━\n`;
+    text += `Please send me the dispatch confirmation. Dhanyawad! 🙏`;
+
+    const encodedText = encodeURIComponent(text);
+    const whatsappURL = `https://api.whatsapp.com/send?phone=918210612345&text=${encodedText}`;
+    
+    // Open in new tab securely
+    window.open(whatsappURL, '_blank');
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div id="cart-drawer-backdrop" className="fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/60 pointer-events-auto"
+          />
+
+          <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            {/* Panel drawer slide */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="w-screen max-w-md bg-[#FAF6EE] h-full shadow-2xl flex flex-col justify-between border-l border-[#EADCC6]"
+            >
+              
+              {/* Drawer Header */}
+              <div className="px-6 py-5 bg-[#3F2E1E] text-[#FAF6EE] flex items-center justify-between border-b border-[#FAF6EE]/15">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-amber-500" />
+                  <h2 className="text-lg font-serif font-black tracking-wide">
+                    {t.cart_heading}
+                  </h2>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-full hover:bg-white/10 text-white/80 hover:text-white focus:outline-none"
+                  title="Close Cart"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                
+                {/* Free Delivery tracker bar */}
+                {cart.length > 0 && (
+                  <div className={`p-3 rounded-xl text-xs font-semibold border flex items-center justify-between ${isFreeDelivery ? 'bg-emerald-500/10 text-emerald-800 border-emerald-500/20' : 'bg-amber-500/10 text-[#3F2E1E] border-amber-500/20'}`}>
+                    <span>
+                      {isFreeDelivery 
+                        ? '🎉 Guaranteed FREE Express Delivery Unlocked!' 
+                        : `🛒 Add ₹${499 - subtotal} more to unlock FREE Home Delivery!`}
+                    </span>
+                    <span className="font-mono text-[10px] font-bold">Limit: ₹499</span>
+                  </div>
+                )}
+
+                {/* Items List */}
+                {cart.length === 0 ? (
+                  <div className="h-4/5 flex flex-col justify-center items-center text-center space-y-4 px-4">
+                    <div className="w-16 h-16 rounded-full bg-[#EADCC6]/50 flex items-center justify-center text-3xl">🧺</div>
+                    <p className="text-xs sm:text-sm text-[#857252] font-semibold leading-relaxed">
+                      {t.empty_cart}
+                    </p>
+                    <button
+                      onClick={onClose}
+                      className="px-6 py-2.5 bg-[#B45309] hover:bg-[#853A00] text-white font-bold text-xs rounded-xl uppercase tracking-wider focus:outline-none cursor-pointer"
+                    >
+                      Browse Sweets & Savory
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4 border-b border-[#EADCC6]/40 pb-4">
+                    {cart.map((item) => (
+                      <div
+                        key={item.product.id}
+                        className="flex items-start gap-4 p-3 bg-white rounded-xl border border-[#EADCC6]/40 shadow-sm relative group"
+                      >
+                        {/* Remove item button icon absolute */}
+                        <button
+                          onClick={() => onRemoveItem(item.product.id)}
+                          className="absolute top-2 right-2 p-1 text-[#857252] hover:text-red-500 transition-colors focus:outline-none"
+                          title="Remove item"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+
+                        <img
+                          src={item.product.images[0]}
+                          alt={item.product.name}
+                          className="w-16 h-16 rounded-lg object-cover bg-amber-50 select-none border border-[#EADCC6]/30"
+                          referrerPolicy="no-referrer"
+                        />
+
+                        <div className="flex-1 space-y-1.5 pr-4">
+                          <p className="text-xs font-bold text-[#857252] uppercase tracking-wider leading-none">{item.product.category}</p>
+                          <h4 className="text-sm font-serif font-black text-[#3F2E1E] leading-tight pr-2">{item.product.name}</h4>
+                          
+                          <div className="flex text-[10px] font-mono text-[#8F7C5D] leading-none">
+                            <span>₹{item.product.price} / {item.product.unit}</span>
+                          </div>
+
+                          {/* Item Quantity editor row */}
+                          <div className="flex items-center justify-between pt-1">
+                            <div className="flex items-center border border-[#EADCC6] rounded-lg bg-[#FAF6EE] px-1.5 h-7">
+                              <button
+                                onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
+                                className="text-zinc-600 hover:text-black p-0.5 focus:outline-none"
+                                title="Less"
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="font-mono text-xs font-bold px-2.5 text-zinc-800">{item.quantity}</span>
+                              <button
+                                onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
+                                className="text-zinc-600 hover:text-black p-0.5 focus:outline-none"
+                                title="More"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
+
+                            {/* Line total */}
+                            <span className="font-mono text-xs font-black text-[#B45309]">
+                              ₹{item.product.price * item.quantity}
+                            </span>
+                          </div>
+
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Promo Code input panel */}
+                {cart.length > 0 && (
+                  <div className="space-y-2 p-3 bg-white rounded-xl border border-[#EADCC6]/40">
+                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#8F7C5D]">Have grandma's coupon?</p>
+                    <form onSubmit={handleApplyPromo} className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="e.g. MAATI50"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        className="bg-[#FAF6EE] border border-[#EADCC6] rounded-lg px-3 py-1.5 text-xs text-[#3F2E1E] focus:outline-none focus:border-[#B45309] w-full"
+                      />
+                      <button 
+                        type="submit" 
+                        className="bg-[#3F2E1E] hover:bg-[#B45309] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg cursor-pointer focus:outline-none"
+                      >
+                        Apply
+                      </button>
+                    </form>
+                    {promoAppliedMsg && (
+                      <p className={`text-[10px] font-bold ${promoAppliedMsg.startsWith('✓') ? 'text-emerald-700' : 'text-red-500'}`}>
+                        {promoAppliedMsg}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+              </div>
+
+              {/* Drawer Footer summary and checkout hooks */}
+              {cart.length > 0 && (
+                <div className="border-t border-[#EADCC6] bg-white p-6 space-y-4 shadow-inner">
+                  
+                  {/* Financial lines */}
+                  <div className="space-y-2.5 text-xs sm:text-sm font-medium">
+                    <div className="flex justify-between text-[#857252]">
+                      <span>{t.subtotal}</span>
+                      <span className="font-mono">₹{subtotal}</span>
+                    </div>
+
+                    {discount > 0 && (
+                      <div className="flex justify-between text-emerald-700 font-bold">
+                        <span>MAATI50 Discount</span>
+                        <span className="font-mono">-₹{discount}</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between text-[#857252]">
+                      <span>{t.shipping}</span>
+                      <span className="font-mono">{isFreeDelivery ? 'FREE' : `₹${shippingCharge}`}</span>
+                    </div>
+
+                    <div className="border-t border-[#EADCC6]/60 pt-2.5 flex justify-between text-[#3F2E1E] text-base font-black">
+                      <span>{t.total}</span>
+                      <span className="font-mono text-[#B45309]">₹{total}</span>
+                    </div>
+                  </div>
+
+                  {/* COD availability badge */}
+                  <div className="text-[10px] text-center font-bold text-[#0F766E] border border-[#0F766E]/20 bg-[#0F766E]/5 rounded-md py-1">
+                    🟢 Cash On Delivery (COD) & UPI payment on delivery available! 
+                  </div>
+
+                  {/* Primary Checkout hooks */}
+                  <div className="space-y-2">
+                    
+                    {/* Native checkout form routing view */}
+                    <button
+                      onClick={() => {
+                        onClose();
+                        onCheckout();
+                      }}
+                      className="w-full h-12 bg-[#B45309] hover:bg-[#853A00] text-white rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-1.5 shadow hover:shadow-md transition-all cursor-pointer focus:outline-none"
+                    >
+                      <span>Proceed to dispatch</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+
+                    {/* WhatsApp Quick order integration trigger */}
+                    <button
+                      onClick={triggerWhatsAppOrder}
+                      className="w-full h-11 bg-[#0F766E] hover:bg-[#0D5C56] text-white rounded-xl font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors focus:outline-none border border-[#0A4D4A]"
+                    >
+                      <Send className="w-3.5 h-3.5 fill-white stroke-none" />
+                      <span>{t.whatsapp_checkout}</span>
+                    </button>
+
+                  </div>
+
+                </div>
+              )}
+
+            </motion.div>
+          </div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
