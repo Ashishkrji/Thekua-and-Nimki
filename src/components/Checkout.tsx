@@ -23,6 +23,13 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successOrder, setSuccessOrder] = useState<Order | null>(null);
 
+  // Mapped Shopify customer loyalty points from Maati Rewards state
+  const [pointsBalance, setPointsBalance] = useState<number>(() => {
+    const saved = localStorage.getItem('maati_rewards_points');
+    return saved ? parseInt(saved, 10) : 380;
+  });
+  const [pointsRedeemed, setPointsRedeemed] = useState<number>(0);
+
   const t = TRANSLATIONS[language];
 
   // Shopify Dynamic currency parameters
@@ -41,8 +48,13 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
   // Hardcoded promo code discount fallback for simplicity matching Cart.tsx
   const rawDiscount = rawSubtotal >= 499 ? 50 : 0;
   const discount = Math.round(rawDiscount * exchangeRate);
+
+  // Rewards discount: 1 loyalty point = 1 Rupee base discount
+  const maxPossiblePointsToRedeem = Math.min(pointsBalance, Math.max(0, rawSubtotal - rawDiscount));
+  const cappedRedeemedRaw = Math.min(pointsRedeemed, maxPossiblePointsToRedeem);
+  const cappedRedeemed = Math.round(cappedRedeemedRaw * exchangeRate);
   
-  const total = subtotal + shippingCharge + taxAmount - discount;
+  const total = Math.max(0, subtotal + shippingCharge + taxAmount - discount - cappedRedeemed);
 
   const validate = () => {
     const tempErrors: Record<string, string> = {};
@@ -60,6 +72,13 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
     e.preventDefault();
     if (!validate()) return;
 
+    // Deduct redeemed points from balance & save
+    if (cappedRedeemedRaw > 0) {
+      const nextBalance = pointsBalance - cappedRedeemedRaw;
+      localStorage.setItem('maati_rewards_points', String(nextBalance));
+      setPointsBalance(nextBalance);
+    }
+
     // Build Mock Shopify Order
     const orderId = `S-MAATI-${Math.floor(100000 + Math.random() * 900000)}`;
     const cleanOrder: Order = {
@@ -68,7 +87,7 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
       customerDetails: { name, phone, address, city, pincode },
       paymentMethod,
       status: 'ordered',
-      total: Math.round(rawSubtotal + (rawSubtotal >= settings.freeShippingThreshold ? 0 : settings.shippingFee) + (rawSubtotal * (settings.taxRate / 100)) - rawDiscount), // keep total in INR base inside data, display is converted
+      total: Math.round(Math.max(0, rawSubtotal + (rawSubtotal >= settings.freeShippingThreshold ? 0 : settings.shippingFee) + (rawSubtotal * (settings.taxRate / 100)) - rawDiscount - cappedRedeemedRaw)), // total in base currency (INR)
       date: new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })
     };
 
@@ -327,6 +346,84 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
               ))}
             </div>
 
+            {/* Shopify Storefront Rewards Bridge (Maps Maati Rewards State) */}
+            <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-600/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-bold text-amber-900 tracking-wider flex items-center gap-1">
+                  ✨ Shopify Rewards Bridge
+                </span>
+                <span className="text-[9px] bg-amber-600 text-white font-extrabold px-1.5 py-0.5 rounded tracking-wide uppercase">
+                  Connected
+                </span>
+              </div>
+              <p className="text-[10px] text-amber-800 leading-normal font-sans">
+                Your Maati loyalty account is mapped to Shopify Points 1:1. Use your points instantly below to claim a checkout subtotal discount.
+              </p>
+
+              <div className="bg-white/80 p-2.5 rounded-xl border border-amber-600/15 flex justify-between items-center text-xs">
+                <div className="leading-tight">
+                  <span className="text-[9px] text-slate-400 block font-mono">Available Points</span>
+                  <strong className="text-slate-800 text-sm font-mono block mt-0.5">
+                    {pointsBalance} Maati Points
+                  </strong>
+                </div>
+                <div className="text-right leading-tight">
+                  <span className="text-[9px] text-slate-400 block font-mono">Max Redeemable</span>
+                  <strong className="text-amber-800 text-sm font-mono block mt-0.5">
+                    {maxPossiblePointsToRedeem} pts ({currencySymbol}{Math.round(maxPossiblePointsToRedeem * exchangeRate)})
+                  </strong>
+                </div>
+              </div>
+
+              {maxPossiblePointsToRedeem > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] text-[#5C4D3C] font-semibold">
+                    <span>Apply Points: <strong className="font-mono text-xs">{pointsRedeemed}</strong></span>
+                    <span>Remaining Balance: <strong className="font-mono">{pointsBalance - pointsRedeemed}</strong></span>
+                  </div>
+                  
+                  {/* Interactive input slider range scale */}
+                  <input
+                    type="range"
+                    min="0"
+                    max={maxPossiblePointsToRedeem}
+                    value={pointsRedeemed}
+                    onChange={(e) => setPointsRedeemed(parseInt(e.target.value, 10))}
+                    className="w-full accent-amber-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                  />
+
+                  {/* Quick-action helper buttons */}
+                  <div className="flex gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setPointsRedeemed(0)}
+                      className="flex-1 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-[9px] font-black rounded cursor-pointer transition-colors"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPointsRedeemed(Math.min(100, maxPossiblePointsToRedeem))}
+                      className="flex-1 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-[9px] font-black rounded cursor-pointer transition-colors"
+                    >
+                      Redeem 100
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPointsRedeemed(maxPossiblePointsToRedeem)}
+                      className="flex-1 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[9px] font-black rounded cursor-pointer transition-colors"
+                    >
+                      Apply Max
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[9px] text-slate-400 font-semibold text-center italic py-2">
+                  No points available or purchase subtotal has been discounted to 0
+                </p>
+              )}
+            </div>
+
             {/* Pricing receipt card */}
             <div className="pt-4 border-t border-[#EADCC6] space-y-2.5 text-xs">
               <div className="flex justify-between text-[#857252]">
@@ -338,6 +435,13 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
                 <div className="flex justify-between text-emerald-700 font-bold">
                   <span>MAATI50 Coupon</span>
                   <span className="font-mono">-{currencySymbol}{discount}</span>
+                </div>
+              )}
+
+              {cappedRedeemed > 0 && (
+                <div className="flex justify-between text-amber-600 font-extrabold">
+                  <span>Shopify Loyalty Points Discount</span>
+                  <span className="font-mono">-{currencySymbol}{cappedRedeemed}</span>
                 </div>
               )}
 

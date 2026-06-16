@@ -10,6 +10,7 @@ import { Product } from '../types';
 export default function ShopifyMerchantPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'settings' | 'products' | 'orders' | 'analytics'>('analytics');
+  const [perfSubView, setPerfSubView] = useState<'sales' | 'categories' | 'engagement' | 'insight'>('sales');
   
   const { 
     products, orders, settings, visitorsCount, 
@@ -58,6 +59,99 @@ export default function ShopifyMerchantPanel() {
   const topSellers = Object.entries(productSells)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 4);
+
+  // Daily Sales trend dataset
+  const days = [
+    { label: '10 Jun', baseSales: 18400 },
+    { label: '11 Jun', baseSales: 22100 },
+    { label: '12 Jun', baseSales: 15900 },
+    { label: '13 Jun', baseSales: 34200 },
+    { label: '14 Jun', baseSales: 29800 },
+    { label: '15 Jun', baseSales: 41500 },
+    { label: '16 Jun', baseSales: 24500 } // today
+  ];
+
+  // Dynamically add actual orders placed today to Today's (June 16) sales!
+  const todayNewSales = orders.reduce((sum, order) => sum + order.total, 0);
+  const chartSalesData = days.map((day, idx) => {
+    const rawSales = idx === 6 ? day.baseSales + todayNewSales : day.baseSales;
+    return {
+      label: day.label,
+      sales: Math.round(rawSales * exchangeRate),
+      raw: rawSales
+    };
+  });
+
+  const maxSales = Math.max(...chartSalesData.map(d => d.sales), 100);
+  const svgWidth = 400;
+  const svgHeight = 130;
+  const paddingX = 40;
+  const paddingY = 20;
+  const chartWidth = svgWidth - paddingX * 2;
+  const chartHeight = svgHeight - paddingY * 2;
+
+  // Let's build the coordinates for the points
+  const points = chartSalesData.map((d, idx) => {
+    const x = paddingX + (idx / (chartSalesData.length - 1)) * chartWidth;
+    const ratio = d.sales / maxSales;
+    const y = svgHeight - paddingY - ratio * chartHeight;
+    return { x, y, label: d.label, sales: d.sales };
+  });
+
+  // Polyline coordinates string
+  const polylinePath = points.map(p => `${p.x},${p.y}`).join(' ');
+  // Area closed path
+  const areaPath = `M ${points[0].x},${svgHeight - paddingY} ` + 
+                   points.map(p => `L ${p.x},${p.y}`).join(' ') + 
+                   ` L ${points[points.length - 1].x},${svgHeight - paddingY} Z`;
+
+  // Snack categories math
+  let thekuaUnits = 145; // baseline
+  let nimkiUnits = 95;   // baseline
+  
+  orders.forEach(order => {
+    order.items.forEach(item => {
+      const cat = item.product.category;
+      if (cat === 'thekua') {
+        thekuaUnits += item.quantity;
+      } else if (cat === 'nimki') {
+        nimkiUnits += item.quantity;
+      } else {
+        thekuaUnits += item.quantity;
+      }
+    });
+  });
+
+  const totalUnits = thekuaUnits + nimkiUnits;
+  const thekuaPercent = Math.round((thekuaUnits / (totalUnits || 1)) * 100);
+  const nimkiPercent = 100 - thekuaPercent;
+
+  const center = 50;
+  const r1 = 35;
+  const circ1 = 2 * Math.PI * r1;
+  const dashOffset1 = circ1 - (thekuaPercent / 100) * circ1;
+
+  const r2 = 24;
+  const circ2 = 2 * Math.PI * r2;
+  const dashOffset2 = circ2 - (nimkiPercent / 100) * circ2;
+
+  // Traffic engagement hourly
+  const trafficData = [
+    { label: '08:00 AM', visitors: 110 },
+    { label: '12:00 PM', visitors: 280 },
+    { label: '04:00 PM', visitors: 440 }, // peak afternoon tea
+    { label: '08:00 PM', visitors: 320 },
+    { label: '12:00 AM', visitors: 90 }
+  ];
+  
+  const maxTraffic = 500;
+  const trafPts = trafficData.map((d, idx) => {
+    const x = paddingX + (idx / (trafficData.length - 1)) * chartWidth;
+    const y = svgHeight - paddingY - (d.visitors / maxTraffic) * chartHeight;
+    return { x, y, label: d.label, visitors: d.visitors };
+  });
+
+  const splinePathString = `M ` + trafPts.map(p => `${p.x},${p.y}`).join(' L ');
 
   const handleCreateProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,6 +327,491 @@ export default function ShopifyMerchantPanel() {
               {/* TAB 1: ANALYTICS */}
               {activeTab === 'analytics' && (
                 <div className="space-y-4">
+                  {/* STORE PERFORMANCE VISUALIZER */}
+                  <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-3.5">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
+                      <div>
+                        <h4 className="text-xs font-extrabold uppercase tracking-widest text-[#5c6ac4] flex items-center gap-1">
+                          📊 Store Performance Visualizer
+                        </h4>
+                        <p className="text-[10px] text-gray-400">Interactive live metrics and D2C trendlines</p>
+                      </div>
+
+                      {/* Pill View Switcher */}
+                      <div className="flex bg-[#FAF9F6] p-1 rounded-xl border border-gray-150 gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setPerfSubView('sales')}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                            perfSubView === 'sales'
+                              ? 'bg-[#5c6ac4] text-white shadow-xs'
+                              : 'text-gray-500 hover:text-gray-900'
+                          }`}
+                        >
+                          Sales
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPerfSubView('categories')}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                            perfSubView === 'categories'
+                              ? 'bg-[#5c6ac4] text-white shadow-xs'
+                              : 'text-gray-500 hover:text-gray-900'
+                          }`}
+                        >
+                          Snacks
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPerfSubView('engagement')}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                            perfSubView === 'engagement'
+                              ? 'bg-[#5c6ac4] text-white shadow-xs'
+                              : 'text-gray-500 hover:text-gray-900'
+                          }`}
+                        >
+                          Activity
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPerfSubView('insight')}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                            perfSubView === 'insight'
+                              ? 'bg-[#5c6ac4] text-white shadow-xs'
+                              : 'text-gray-500 hover:text-gray-900'
+                          }`}
+                        >
+                          Insights
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Rendering the appropriate visual SVG based on selection */}
+                    <div className="bg-[#FFFDF9] p-3 rounded-xl border border-dashed border-[#EADCC6]/80 min-h-[160px] flex flex-col justify-between">
+                      {perfSubView === 'sales' && (
+                        <div className="space-y-2.5 animate-fadeIn">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="text-[10px] font-mono text-[#857252] block uppercase font-bold">
+                                Projected Daily Sales Trend (7-Day Area Chart)
+                              </span>
+                              <div className="flex items-baseline gap-1 mt-0.5">
+                                <span className="text-[11px] font-semibold text-slate-500">
+                                  Highest peak today:
+                                </span>
+                                <span className="text-xs font-black text-[#ff6b00] font-mono ml-1.5">
+                                  {currencySymbol}{maxSales}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="text-[9px] bg-amber-500/10 text-amber-800 font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              Real-Time Feed
+                            </span>
+                          </div>
+
+                          {/* Line and Area Chart container */}
+                          <div className="h-[130px] w-full mt-2 relative">
+                            {/* Render our highly responsive coordinate-scaled SVG chart */}
+                            <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
+                              <defs>
+                                <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#ff6b00" stopOpacity="0.32" />
+                                  <stop offset="100%" stopColor="#ff6b00" stopOpacity="0.0" />
+                                </linearGradient>
+                              </defs>
+
+                              {/* Grid Lines */}
+                              {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+                                const y = paddingY + ratio * chartHeight;
+                                const value = Math.round(maxSales * (1 - ratio));
+                                return (
+                                  <g key={i} className="opacity-40">
+                                    <line 
+                                      x1={paddingX} 
+                                      y1={y} 
+                                      x2={svgWidth - paddingX} 
+                                      y2={y} 
+                                      stroke="#EADCC6" 
+                                      strokeDasharray="4 4"
+                                    />
+                                    <text 
+                                      x={paddingX - 8} 
+                                      y={y + 3} 
+                                      textAnchor="end" 
+                                      className="text-[9px] font-mono fill-amber-900 font-semibold"
+                                    >
+                                      {currencySymbol}{value}
+                                    </text>
+                                  </g>
+                                );
+                              })}
+
+                              {/* X Axis Labels */}
+                              {points.map((p, idx) => (
+                                <text
+                                  key={idx}
+                                  x={p.x}
+                                  y={svgHeight - 4}
+                                  textAnchor="middle"
+                                  className="text-[9px] font-semibold fill-amber-800 font-sans"
+                                >
+                                  {p.label}
+                                </text>
+                              ))}
+
+                              {/* Filled Area */}
+                              <path d={areaPath} fill="url(#salesGrad)" />
+
+                              {/* Stroke line */}
+                              <path d={`M ` + polylinePath} fill="none" stroke="#ff6b00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+                              {/* Interactive circles */}
+                              {points.map((p, idx) => (
+                                <g key={idx} className="group/dot cursor-pointer">
+                                  <circle 
+                                    cx={p.x} 
+                                    cy={p.y} 
+                                    r="4" 
+                                    fill="#ffffff" 
+                                    stroke="#ff6b00" 
+                                    strokeWidth="2.5" 
+                                  />
+                                  <title>
+                                    {p.label}: {currencySymbol}{p.sales}
+                                  </title>
+                                </g>
+                              ))}
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Doughnut category distribution */}
+                      {perfSubView === 'categories' && (
+                        <div className="space-y-3.5 animate-fadeIn">
+                          <div>
+                            <span className="text-[10px] font-mono text-[#857252] block uppercase font-bold">
+                              Top Performing Snack Categories (Segment Share)
+                            </span>
+                            <p className="text-[10px] text-gray-500 mt-0.5">Sweet Thekuas vs Savory Nimkis & Spices</p>
+                          </div>
+
+                          <div className="flex items-center gap-6 py-1">
+                            {/* Doughnut SVG */}
+                            <div className="relative w-24 h-24 shrink-0 flex items-center justify-center">
+                              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                {/* Base track ring 1 */}
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r={r1}
+                                  fill="transparent"
+                                  stroke="#FAF6EE"
+                                  strokeWidth="9"
+                                />
+                                {/* Active segments ring 1 (Thekua) */}
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r={r1}
+                                  fill="transparent"
+                                  stroke="#ff6b00"
+                                  strokeWidth="9"
+                                  strokeDasharray={circ1}
+                                  strokeDashoffset={dashOffset1}
+                                  strokeLinecap="round"
+                                />
+
+                                {/* Base track ring 2 */}
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r={r2}
+                                  fill="transparent"
+                                  stroke="#FAF6EE"
+                                  strokeWidth="9"
+                                />
+                                {/* Active segment ring 2 (nimki) */}
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r={r2}
+                                  fill="transparent"
+                                  stroke="#4f46e5"
+                                  strokeWidth="9"
+                                  strokeDasharray={circ2}
+                                  strokeDashoffset={dashOffset2}
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+
+                              {/* Center summary text */}
+                              <div className="absolute text-center flex flex-col leading-none">
+                                <span className="text-xs font-extrabold text-slate-800">{totalUnits}</span>
+                                <span className="text-[7px] font-semibold text-gray-400 uppercase tracking-wider">Packs</span>
+                              </div>
+                            </div>
+
+                            {/* Legendary breakdown */}
+                            <div className="flex-1 space-y-2.5">
+                              {/* Thekua segment info */}
+                              <div className="space-y-0.5">
+                                <div className="flex items-center justify-between text-xs font-bold">
+                                  <span className="flex items-center gap-1.5 text-gray-700">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-[#ff6b00]" />
+                                    Sweet (Thekuas)
+                                  </span>
+                                  <span className="font-mono text-gray-950 font-black">{thekuaPercent}%</span>
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono">
+                                  Prepared: {thekuaUnits} packs
+                                </div>
+                              </div>
+
+                              {/* Nimki segment info */}
+                              <div className="space-y-0.5">
+                                <div className="flex items-center justify-between text-xs font-bold">
+                                  <span className="flex items-center gap-1.5 text-gray-700">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-[#4f46e5]" />
+                                    Savory (Nimkis)
+                                  </span>
+                                  <span className="font-mono text-gray-950 font-black">{nimkiPercent}%</span>
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono">
+                                  Prepared: {nimkiUnits} packs
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Visitor hours trends */}
+                      {perfSubView === 'engagement' && (
+                        <div className="space-y-2.5 animate-fadeIn">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="text-[10px] font-mono text-[#857252] block uppercase font-bold">
+                                Visitor Engagement Curve (Spline Flow)
+                              </span>
+                              <p className="text-[10px] text-gray-500 mt-0.5">Peaks at late afternoon teatime snack browsing</p>
+                            </div>
+                            <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              Traffic Live
+                            </span>
+                          </div>
+
+                          {/* Spline rendering */}
+                          <div className="h-[125px] w-full mt-2 relative">
+                            <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
+                              {/* Grid lines */}
+                              {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+                                const y = paddingY + ratio * chartHeight;
+                                const val = Math.round(500 * (1 - ratio));
+                                return (
+                                  <g key={i} className="opacity-40">
+                                    <line
+                                      x1={paddingX}
+                                      y1={y}
+                                      x2={svgWidth - paddingX}
+                                      y2={y}
+                                      stroke="#EADCC6"
+                                      strokeDasharray="3 3"
+                                    />
+                                    <text
+                                      x={paddingX - 8}
+                                      y={y + 3}
+                                      textAnchor="end"
+                                      className="text-[8px] font-mono fill-amber-900 font-bold"
+                                    >
+                                      {val}
+                                    </text>
+                                  </g>
+                                );
+                              })}
+
+                              {/* Horizontal categories hours */}
+                              {trafPts.map((p, idx) => (
+                                <text
+                                  key={idx}
+                                  x={p.x}
+                                  y={svgHeight - 4}
+                                  textAnchor="middle"
+                                  className="text-[9px] font-semibold fill-amber-800 font-mono"
+                                >
+                                  {p.label}
+                                </text>
+                              ))}
+
+                              {/* Spline pathway curve line */}
+                              <path
+                                d={splinePathString}
+                                fill="none"
+                                stroke="#10b981"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                              />
+
+                              {/* Data circles */}
+                              {trafPts.map((p, idx) => (
+                                <g key={idx} className="group/tg pointer hover:scale-110">
+                                  <circle
+                                    cx={p.x}
+                                    cy={p.y}
+                                    r="4"
+                                    fill="#ffffff"
+                                    stroke="#10b981"
+                                    strokeWidth="2.5"
+                                  />
+                                  <title>
+                                    Time {p.label}: {p.visitors} Active Clicks
+                                  </title>
+                                </g>
+                              ))}
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+
+                      {perfSubView === 'insight' && (
+                        <div className="space-y-4 animate-fadeIn text-left">
+                          <div className="flex justify-between items-center bg-[#FAF6EE] p-2.5 rounded-xl border border-[#EADCC6]/45">
+                            <div>
+                              <span className="text-[10px] font-mono text-[#857252] block uppercase font-bold">
+                                Traditional Recipes Funnel Analysis
+                              </span>
+                              <p className="text-[10px] text-[#A69276] leading-none mt-0.5">Tracking conversion rates from recipe card clicks to processed checkout orders</p>
+                            </div>
+                            <span className="text-[9px] bg-emerald-600/10 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded uppercase">
+                              Active
+                            </span>
+                          </div>
+
+                          {/* Visual conversion funnel */}
+                          <div className="grid grid-cols-12 gap-3.5 items-center">
+                            {/* SVG Funnel Pathway */}
+                            <div className="col-span-12 xs:col-span-5 md:col-span-5 h-[130px] flex items-center justify-center">
+                              <svg className="w-full h-full max-h-[135px]" viewBox="0 0 120 100">
+                                <defs>
+                                  <linearGradient id="funnelGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#6C3483" />
+                                    <stop offset="50%" stopColor="#FF6B00" />
+                                    <stop offset="100%" stopColor="#1A1A2E" />
+                                  </linearGradient>
+                                </defs>
+                                
+                                {/* Funnel visual polygons */}
+                                <g className="opacity-90">
+                                  {/* Step 1: Recipe Views */}
+                                  <polygon points="10,5 110,5 95,28 25,28" fill="#6C3483" />
+                                  <text x="60" y="18" textAnchor="middle" fill="#ffffff" className="text-[10px] font-black font-mono">100% Views</text>
+                                  
+                                  {/* Step 2: Added ingredients */}
+                                  <polygon points="27,31 93,31 82,54 38,54" fill="#FF6B00" />
+                                  <text x="60" y="44" textAnchor="middle" fill="#ffffff" className="text-[10px] font-black font-mono">45% Basket</text>
+                                  
+                                  {/* Step 3: Finished Checkout */}
+                                  <polygon points="40,57 80,57 70,80 50,80" fill="#1A1A2E" stroke="#FF6B00" strokeWidth="0.5" />
+                                  <text x="60" y="70" textAnchor="middle" fill="#ffffff" className="text-[10px] font-black font-mono">22.5% Order</text>
+                                </g>
+
+                                <line x1="60" y1="82" x2="60" y2="92" stroke="#FF6B00" strokeWidth="2" strokeDasharray="3 3" />
+                                <circle cx="60" cy="95" r="3" fill="#00C853" />
+                              </svg>
+                            </div>
+
+                            {/* Funnel explanation list */}
+                            <div className="col-span-12 xs:col-span-7 md:col-span-7 space-y-2">
+                              <div className="flex justify-between text-[10px] border-b border-gray-100 pb-1 items-baseline">
+                                <span className="text-gray-400 font-bold flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#6C3483]" />
+                                  1. Recipe Interaction
+                                </span>
+                                <strong className="font-mono text-slate-700">410 Clicks</strong>
+                              </div>
+                              <div className="flex justify-between text-[10px] border-b border-gray-100 pb-1 items-baseline">
+                                <span className="text-gray-400 font-bold flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" />
+                                  2. Add Ingredients Pack
+                                </span>
+                                <strong className="font-mono text-slate-700">185 Carts (45.1%)</strong>
+                              </div>
+                              <div className="flex justify-between text-[10px] border-b border-gray-100 pb-1 items-baseline">
+                                <span className="text-gray-400 font-bold flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A2E]" />
+                                  3. Complete Checkout
+                                </span>
+                                <strong className="font-mono text-emerald-700">92 Paid (22.4%)</strong>
+                              </div>
+                              
+                              <p className="text-[9px] text-[#857252] leading-tight italic bg-amber-50 rounded-lg p-1.5 border border-[#EADCC6]/45">
+                                💡 <strong>Insight:</strong> Grandma's traditional details increase checkout completion by +8.4% above normal D2C averages!
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Product-Specific Metrics Section */}
+                          <div className="space-y-2 pt-2 border-t border-gray-100">
+                            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+                              Conversion Rate by Snack Product
+                            </span>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              {/* Product 1 */}
+                              <div className="p-2 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5">
+                                <div className="flex justify-between items-center">
+                                  <strong className="text-[10px] text-slate-800 truncate block max-w-[100px]">Wheat Gur Thekua</strong>
+                                  <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1 rounded">22.9%</span>
+                                </div>
+                                <div className="w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                                  <div className="bg-[#6C3483] h-full" style={{ width: '22.9%' }} />
+                                </div>
+                                <span className="text-[9px] text-slate-400 font-mono block">185 Added • 94 Orders</span>
+                              </div>
+
+                              {/* Product 2 */}
+                              <div className="p-2 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5">
+                                <div className="flex justify-between items-center">
+                                  <strong className="text-[10px] text-slate-800 truncate block max-w-[100px]">Savory Crispy Nimki</strong>
+                                  <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1 rounded">20.0%</span>
+                                </div>
+                                <div className="w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                                  <div className="bg-[#FF6B00] h-full" style={{ width: '20.0%' }} />
+                                </div>
+                                <span className="text-[9px] text-slate-400 font-mono block">110 Added • 58 Orders</span>
+                              </div>
+
+                              {/* Product 3 */}
+                              <div className="p-2 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5">
+                                <div className="flex justify-between items-center">
+                                  <strong className="text-[10px] text-slate-800 truncate block max-w-[100px]">Gur Til Laddu</strong>
+                                  <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1 rounded">22.1%</span>
+                                </div>
+                                <div className="w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                                  <div className="bg-emerald-600 h-full" style={{ width: '22.1%' }} />
+                                </div>
+                                <span className="text-[9px] text-slate-400 font-mono block">78 Added • 42 Orders</span>
+                              </div>
+
+                              {/* Product 4 */}
+                              <div className="p-2 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5">
+                                <div className="flex justify-between items-center">
+                                  <strong className="text-[10px] text-slate-800 truncate block max-w-[100px]">Besan Sev Papdi</strong>
+                                  <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1 rounded">17.8%</span>
+                                </div>
+                                <div className="w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                                  <div className="bg-[#1A1A2E] h-full" style={{ width: '17.8%' }} />
+                                </div>
+                                <span className="text-[9px] text-slate-400 font-mono block">45 Added • 18 Orders</span>
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   {/* KPI Stats Cards */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs">

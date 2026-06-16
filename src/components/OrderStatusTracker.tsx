@@ -54,6 +54,28 @@ export default function OrderStatusTracker({ language, initialOrderId = '', onCl
   // Custom message states
   const [searchError, setSearchError] = useState<string | null>(null);
 
+  const getWhatsAppKitchenURL = () => {
+    const text = encodeURIComponent(
+      language === 'en'
+        ? `Namaste Maati Kitchen! 🌾 I want to check the cooking status of my order ${orderQuery}. Please share details. Thanks!`
+        : language === 'hi'
+        ? `नमस्ते माटी रसोई! 🌾 मैं अपने आर्डर ${orderQuery} की ताज़ा स्थिति जानना चाहता हूँ। कृपया विवरण सांझा करें। धन्यवाद!`
+        : `प्रणाम माटी रसोई! 🌾 हम अपन आर्डर ${orderQuery} के स्थिति के बारे में जाने के चाहत बानी। कृपया बताईं। धन्यवाद!`
+    );
+    return `https://api.whatsapp.com/send?phone=918210612345&text=${text}`;
+  };
+
+  const getAskGrandmaWhatsAppURL = () => {
+    const text = encodeURIComponent(
+      language === 'en'
+        ? `Pranam Grandma! 👵 I placed order ${orderQuery}. Could you please check with your kitchen team and give me a friendly shipping update on my freshly made traditional snacks? Thank you! 🙏`
+        : language === 'hi'
+        ? `प्रणाम दादी माँ! 👵 मैंने आर्डर ${orderQuery} भेजा है। कृपा करके अपनी रसोई टीम से देखकर मेरी ताज़ा रेसिपी का शिपिंग स्टेटस बतायें। धन्यवाद! 🙏`
+        : `प्रणाम दादी माँ! 👵 हम अपन आर्डर ${orderQuery} भेजले बानी। कृपा करके अपन रसोई टीम से देख के बताइं की ताज़ा पकवान कब तक शिप होखल। धन्यवाद! 🙏`
+    );
+    return `https://api.whatsapp.com/send?phone=918210612345&text=${text}`;
+  };
+
   const STAGES: StepDetail[] = [
     {
       title: {
@@ -342,7 +364,45 @@ export default function OrderStatusTracker({ language, initialOrderId = '', onCl
                     </strong>
                   </div>
 
-                  <div className="flex flex-wrap gap-4 font-mono text-xs text-[#5C4D3C] font-semibold">
+                   <div className="flex flex-wrap gap-2">
+                    {/* Message on WhatsApp quick launch */}
+                    <a
+                      href={getWhatsAppKitchenURL()}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#128C7E] text-white text-xs font-bold rounded-xl shadow-sm transition-all hover:scale-103 active:scale-97 cursor-pointer focus:outline-none"
+                      title="Direct Kitchen WhatsApp Verification"
+                    >
+                      <span className="text-base leading-none">💬</span>
+                      <span>
+                        {language === 'en' 
+                          ? 'Message on WhatsApp' 
+                          : language === 'hi'
+                          ? 'व्हाट्सएप पर पूछें'
+                          : 'व्हाट्सएप से पूछीं'}
+                      </span>
+                    </a>
+
+                    {/* Ask Grandma button for polite updates */}
+                    <a
+                      href={getAskGrandmaWhatsAppURL()}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF6B00] hover:bg-[#E05E00] text-white text-xs font-bold rounded-xl shadow-sm transition-all hover:scale-103 active:scale-97 cursor-pointer focus:outline-none border border-white/10"
+                      title="Ask Grandma for Update"
+                    >
+                      <span className="text-base leading-none">👵</span>
+                      <span>
+                        {language === 'en' 
+                          ? 'Ask Grandma' 
+                          : language === 'hi'
+                          ? 'दादी माँ से पूछें'
+                          : 'दादी माँ से पूछीं'}
+                      </span>
+                    </a>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 font-mono text-xs text-[#5C4D3C] font-semibold font-semibold">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4 text-[#B45309]" />
                       <span>Est: Express Delivery</span>
@@ -527,6 +587,39 @@ export default function OrderStatusTracker({ language, initialOrderId = '', onCl
                           ? 'We prepare strictly whole-wheat treats, kneaded by hand to keep structural fluff intact. Stored in sanitized drawers.' 
                           : 'हम बिना कृत्रिम रंगों के शुद्ध गेंहू व गुड़ से ताज़ा स्नैक्स बनाते हैं।'}
                       </p>
+                    </div>
+
+                     {/* Quick Kitchen Team WhatsApp Card */}
+                    <div className="p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20 flex flex-col gap-3 mt-3 text-left">
+                      <div>
+                        <h5 className="text-xs font-serif font-black text-emerald-900 uppercase tracking-wide flex items-center gap-1 font-bold">
+                          <span>💬</span>
+                          <span>{language === 'en' ? 'Live Kitchen Assistance' : 'सीधी रसोई सहायता टीम'}</span>
+                        </h5>
+                        <p className="text-[10px] text-emerald-800 leading-normal font-medium mt-1">
+                          {language === 'en' 
+                            ? 'Connect directly with Saran village kitchen with your order ID to inquire about customized options, special baking instructions, or polite shipping updates directly from Grandma!' 
+                            : 'सामग्री में घी/मीठा कस्टमाइज करने अथवा लाइव कढ़ाई का आर्डर अपडेट जानने के लिए सीधे रसोई समन्वयक या दादी माँ से व्हाट्सएप्प पर संपर्क करें!'}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <a
+                          href={getWhatsAppKitchenURL()}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="py-2 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-lg text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-1.5 transition-all shadow hover:scale-102 focus:outline-none"
+                        >
+                          <span>💬 Message Team</span>
+                        </a>
+                        <a
+                          href={getAskGrandmaWhatsAppURL()}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="py-2 bg-[#FF6B00] hover:bg-[#E05E00] text-white rounded-lg text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-1.5 transition-all shadow hover:scale-102 focus:outline-none"
+                        >
+                          <span>👵 Ask Grandma</span>
+                        </a>
+                      </div>
                     </div>
 
                   </div>

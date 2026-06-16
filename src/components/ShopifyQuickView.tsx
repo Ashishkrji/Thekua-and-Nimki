@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useShopify } from '../context/ShopifyContext';
 import { X, Star, ShoppingBag, Plus, Minus, ShieldCheck, Heart, Sparkles, Clipboard, Flame } from 'lucide-react';
 import { Product, Language } from '../types';
@@ -26,6 +26,54 @@ export default function ShopifyQuickView({
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
+
+  // Automated SEO Metadata Injector
+  useEffect(() => {
+    if (!isOpen || !product) return;
+
+    // Save initial meta state
+    const previousTitle = document.title;
+    
+    let metaDesc = document.querySelector('meta[name="description"]');
+    const previousDesc = metaDesc ? metaDesc.getAttribute('content') : '';
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+
+    let metaKeys = document.querySelector('meta[name="keywords"]');
+    const previousKeys = metaKeys ? metaKeys.getAttribute('content') : '';
+    if (!metaKeys) {
+      metaKeys = document.createElement('meta');
+      metaKeys.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKeys);
+    }
+
+    // Dynamically inject product specific SEO tags
+    document.title = `Buy Handcrafted ${product.name} | Maati Shopify Store`;
+    metaDesc.setAttribute('content', `Shop delicious handcrafted traditional ${product.name}. ${product.description} Pack of ${product.unit}. Highly rated at ${product.rating.toFixed(1)} stars.`);
+    metaKeys.setAttribute('content', `shopify, premium snacks, local ingredients, bihar, traditional, ${product.name.toLowerCase()}, ${product.ingredients.join(', ').toLowerCase()}`);
+
+    // Restore default tags on close or swap
+    return () => {
+      document.title = previousTitle;
+      if (metaDesc) {
+        if (previousDesc) {
+          metaDesc.setAttribute('content', previousDesc);
+        } else {
+          metaDesc.removeAttribute('content');
+        }
+      }
+      if (metaKeys) {
+        if (previousKeys) {
+          metaKeys.setAttribute('content', previousKeys);
+        } else {
+          metaKeys.removeAttribute('content');
+        }
+      }
+    };
+  }, [isOpen, product]);
 
   if (!isOpen || !product) return null;
 
