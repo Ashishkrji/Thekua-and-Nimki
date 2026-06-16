@@ -50,7 +50,7 @@ export interface Order {
     city: string;
     pincode: string;
   };
-  paymentMethod: 'COD' | 'Online';
+  paymentMethod: 'COD' | 'Online' | 'Razorpay' | string;
   status: 'ordered' | 'preparing' | 'shipped' | 'delivered';
   total: number;
   date: string;
