@@ -85,7 +85,7 @@ export default function OrderStatusTracker({ language, initialOrderId = '', onCl
       },
       statusKey: 'baking',
       desc: {
-        en: 'Maati snacks are hand-rolled and cooked in pure cow cow ghee and organic jaggery in our village hearths.',
+        en: 'Maati snacks are hand-rolled and cooked in pure cow ghee and organic jaggery in our village hearths.',
         hi: 'आपके आर्डर को अभी ताज़ा शुद्ध गाय के घी और कोल्हू के गुड़ से गूंथकर धीमी आंच पर तैयार किया जा रहा है।',
         bho: 'रउआ आर्डर के अभी ताज़ा शुद्ध गाय के घी अउर गाँव के गुड़ से छान के तैयार कइल जात बा।'
       },
