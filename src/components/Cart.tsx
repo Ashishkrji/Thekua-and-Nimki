@@ -3,6 +3,7 @@ import { X, Trash2, Plus, Minus, ArrowRight, Sparkles, ShoppingBag, Send } from 
 import { CartItem, Language } from '../types';
 import { TRANSLATIONS } from '../data';
 import { motion, AnimatePresence } from 'motion/react';
+import { useShopify } from '../context/ShopifyContext';
 
 interface CartProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export default function Cart({
   onCheckout,
   language
 }: CartProps) {
+  const { settings } = useShopify();
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [promoAppliedMsg, setPromoAppliedMsg] = useState('');
@@ -36,33 +38,41 @@ export default function Cart({
 
   const t = TRANSLATIONS[language];
 
-  // Calculations
-  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const isFreeDelivery = subtotal >= 499;
-  const shippingCharge = subtotal > 0 && !isFreeDelivery ? 60 : 0;
-  
-  // Point values: 1 point = 1 Rupee discount
-  const maxPossiblePointsToRedeem = Math.min(pointsBalance, subtotal);
-  const cappedRedeemed = Math.min(pointsRedeemed, maxPossiblePointsToRedeem);
-  
-  const total = Math.max(0, subtotal + shippingCharge - discount - cappedRedeemed);
-  const earnedPoints = Math.floor(subtotal / 10);
+  // Dynamic currency support
+  const currencySymbol = settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₹';
+  const exchangeRate = settings.currency === 'USD' ? 0.012 : settings.currency === 'EUR' ? 0.011 : 1;
 
+  // Raw calculations in base currency (INR)
+  const rawSubtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const subtotal = Math.round(rawSubtotal * exchangeRate);
+
+  const isFreeDelivery = rawSubtotal >= settings.freeShippingThreshold;
+  const shippingCharge = rawSubtotal > 0 && !isFreeDelivery ? Math.round(settings.shippingFee * exchangeRate) : 0;
+  
+  // Point values: 1 point = 1 rupee discount
+  const maxPossiblePointsToRedeem = Math.min(pointsBalance, rawSubtotal);
+  const cappedRedeemedRaw = Math.min(pointsRedeemed, maxPossiblePointsToRedeem);
+  const cappedRedeemed = Math.round(cappedRedeemedRaw * exchangeRate);
+  
+  // Apply Promo
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
     if (promoCode.trim().toUpperCase() === 'MAATI50') {
-      if (subtotal < 499) {
-        setPromoAppliedMsg(language === 'en' ? '⚠️ Promo code is valid only for orders above ₹499!' : '⚠️ कूपन कोड केवल ₹४९९ से ऊपर के आर्डर पर मान्य है!');
+      if (rawSubtotal < 499) {
+        setPromoAppliedMsg(language === 'en' ? `⚠️ Promo is valid only for orders above ${currencySymbol}${Math.round(499 * exchangeRate)}!` : `⚠️ कूपन कोड केवल ${currencySymbol}${Math.round(499 * exchangeRate)} से ऊपर के आर्डर पर मान्य है!`);
         setDiscount(0);
       } else {
-        setDiscount(50);
-        setPromoAppliedMsg(language === 'en' ? '✓ Promo "MAATI50" Applied! ₹50 Discounted.' : '✓ कूपन कोड "MAATI50" सफल रहा! ₹५० की छूट मिली।');
+        setDiscount(Math.round(50 * exchangeRate));
+        setPromoAppliedMsg(language === 'en' ? `✓ Promo "MAATI50" Applied! ${currencySymbol}${Math.round(50 * exchangeRate)} Discounted.` : `✓ कूपन कोड "MAATI50" सफल रहा! ${currencySymbol}${Math.round(50 * exchangeRate)} की छूट मिली।`);
       }
     } else {
       setPromoAppliedMsg(language === 'en' ? '❌ Invalid Promo Code!' : '❌ कूपन कोड अमान्य है!');
       setDiscount(0);
     }
   };
+
+  const total = Math.max(0, subtotal + shippingCharge - discount - cappedRedeemed);
+  const earnedPoints = Math.floor(rawSubtotal / 10);
 
   // Pre-filled WhatsApp checkout message generator
   const triggerWhatsAppOrder = () => {
@@ -160,9 +170,9 @@ export default function Cart({
                     <span>
                       {isFreeDelivery 
                         ? '🎉 Guaranteed FREE Express Delivery Unlocked!' 
-                        : `🛒 Add ₹${499 - subtotal} more to unlock FREE Home Delivery!`}
+                        : `🛒 Add ${currencySymbol}${Math.round((settings.freeShippingThreshold - rawSubtotal) * exchangeRate)} more to unlock FREE Home Delivery!`}
                     </span>
-                    <span className="font-mono text-[10px] font-bold">Limit: ₹499</span>
+                    <span className="font-mono text-[10px] font-bold">Limit: {currencySymbol}{Math.round(settings.freeShippingThreshold * exchangeRate)}</span>
                   </div>
                 )}
 
@@ -208,7 +218,7 @@ export default function Cart({
                           <h4 className="text-sm font-serif font-black text-[#3F2E1E] leading-tight pr-2">{item.product.name}</h4>
                           
                           <div className="flex text-[10px] font-mono text-[#8F7C5D] leading-none">
-                            <span>₹{item.product.price} / {item.product.unit}</span>
+                            <span>{currencySymbol}{Math.round(item.product.price * exchangeRate)} / {item.product.unit}</span>
                           </div>
 
                           {/* Item Quantity editor row */}
@@ -233,7 +243,7 @@ export default function Cart({
 
                             {/* Line total */}
                             <span className="font-mono text-xs font-black text-[#B45309]">
-                              ₹{item.product.price * item.quantity}
+                              {currencySymbol}{Math.round(item.product.price * item.quantity * exchangeRate)}
                             </span>
                           </div>
 
@@ -361,31 +371,31 @@ export default function Cart({
                   <div className="space-y-2.5 text-xs sm:text-sm font-medium">
                     <div className="flex justify-between text-[#857252]">
                       <span>{t.subtotal}</span>
-                      <span className="font-mono">₹{subtotal}</span>
+                      <span className="font-mono">{currencySymbol}{subtotal}</span>
                     </div>
 
                     {discount > 0 && (
                       <div className="flex justify-between text-emerald-700 font-bold">
                         <span>MAATI50 Discount</span>
-                        <span className="font-mono">-₹{discount}</span>
+                        <span className="font-mono">-{currencySymbol}{discount}</span>
                       </div>
                     )}
 
                     {cappedRedeemed > 0 && (
                       <div className="flex justify-between text-amber-800 font-bold">
                         <span>🌟 Maati Points Applied</span>
-                        <span className="font-mono">-₹{cappedRedeemed}</span>
+                        <span className="font-mono">-{currencySymbol}{cappedRedeemed}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between text-[#857252]">
                       <span>{t.shipping}</span>
-                      <span className="font-mono">{isFreeDelivery ? 'FREE' : `₹${shippingCharge}`}</span>
+                      <span className="font-mono">{isFreeDelivery ? 'FREE' : `${currencySymbol}${shippingCharge}`}</span>
                     </div>
 
                     <div className="border-t border-[#EADCC6]/60 pt-2.5 flex justify-between text-[#3F2E1E] text-base font-black">
                       <span>{t.total}</span>
-                      <span className="font-mono text-[#B45309]">₹{total}</span>
+                      <span className="font-mono text-[#B45309]">{currencySymbol}{total}</span>
                     </div>
                   </div>
 

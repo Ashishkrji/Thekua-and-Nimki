@@ -3,6 +3,7 @@ import { Menu, X, ShoppingCart, Heart, Search, Globe, ChevronDown, Compass, Awar
 import { Language, CartItem, Product } from '../types';
 import { TRANSLATIONS } from '../data';
 import { motion, AnimatePresence } from 'motion/react';
+import { useShopify } from '../context/ShopifyContext';
 
 interface NavbarProps {
   language: Language;
@@ -31,8 +32,9 @@ export default function Navbar({
   activeView,
   setActiveView,
   onProductClick,
-  products
+  products: staticProducts
 }: NavbarProps) {
+  const { products, settings } = useShopify();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -40,7 +42,7 @@ export default function Navbar({
   const t = TRANSLATIONS[language];
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Filtered search results for quick-select
+  // Filtered search results for quick-select query against our live and editable products list!
   const filteredSearchProducts = searchQuery.trim()
     ? products.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -64,15 +66,11 @@ export default function Navbar({
 
   return (
     <header id="main-header" className="sticky top-0 z-50 bg-[#FBF9F4]/90 backdrop-blur-md border-b border-[#EADCC6] shadow-sm">
-      {/* Festival Banner Overlay */}
+      {/* Festival Banner Overlay - Dynamic Scroll text from settings */}
       <div className="bg-gradient-to-r from-[#D97706] to-[#B45309] text-[#FBF9F4] text-center py-2 px-4 text-xs font-medium tracking-wide flex items-center justify-center gap-2">
         <span className="animate-pulse">✨</span>
-        <span>
-          {language === 'en' 
-            ? '🔥 Special Offer: Use code MAATI50 to get ₹50 Off on orders above ₹499! FREE Delivery PAN India 📦'
-            : language === 'hi'
-            ? '🔥 स्पेशल ऑफर: ₹४९९ से ऊपर के आर्डर पर ₹५० की छूट, कूपन MAATI50 लगाएं! फ्री सुरक्षित डिलीवरी 📦'
-            : '🔥 खास नेवता: ₹४९९ के आर्डर पर ₹५० छूट बदे MAATI50 कूपन लगाइब! मुफ़्त होम डिलीवरी 📦'}
+        <span className="truncate">
+          {settings.announcementText}
         </span>
       </div>
 

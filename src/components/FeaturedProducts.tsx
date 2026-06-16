@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Star, Eye, Heart, ShoppingBag, Plus, Minus, Info } from 'lucide-react';
+import { Star, Eye, Heart, ShoppingBag, Plus, Minus, AlertCircle } from 'lucide-react';
 import { Product, Language } from '../types';
-import { PRODUCTS, TRANSLATIONS, getLocalizedBadge, getLocalizedShelfLife } from '../data';
+import { TRANSLATIONS, getLocalizedBadge, getLocalizedShelfLife } from '../data';
 import { motion } from 'motion/react';
+import { useShopify } from '../context/ShopifyContext';
 
 interface FeaturedProductsProps {
   language: Language;
@@ -10,6 +11,7 @@ interface FeaturedProductsProps {
   onProductClick: (product: Product) => void;
   wishlist: Product[];
   onToggleWishlist: (product: Product) => void;
+  onQuickViewClick: (product: Product) => void;
 }
 
 export default function FeaturedProducts({
@@ -17,15 +19,20 @@ export default function FeaturedProducts({
   onAddToCart,
   onProductClick,
   wishlist,
-  onToggleWishlist
+  onToggleWishlist,
+  onQuickViewClick
 }: FeaturedProductsProps) {
+  const { products, settings } = useShopify();
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'thekua' | 'nimki'>('all');
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
   const t = TRANSLATIONS[language];
 
-  const filteredProducts = PRODUCTS.filter(product => {
+  const currencySymbol = settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₹';
+  const exchangeRate = settings.currency === 'USD' ? 0.012 : settings.currency === 'EUR' ? 0.011 : 1;
+
+  const filteredProducts = products.filter(product => {
     if (selectedCategory === 'all') return true;
     return product.category === selectedCategory;
   });
@@ -159,26 +166,31 @@ export default function FeaturedProducts({
 
                 {/* Product image with slow zoom effect */}
                 <div 
-                  onClick={() => onProductClick(product)}
-                  className="relative aspect-4/3 overflow-hidden cursor-pointer bg-[#F1EAD9] border-b border-[#EADCC6]"
+                  className="relative aspect-4/3 overflow-hidden cursor-pointer bg-[#F1EAD9] border-b border-[#EADCC6] group/pic"
                 >
                   <img
                     src={product.images[0]}
                     alt={product.name}
                     loading="lazy"
+                    onClick={() => onProductClick(product)}
                     className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                     referrerPolicy="no-referrer"
                   />
                   
-                  {/* Subtle black translucent shade on hover */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#3F2E1E]/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between items-end">
-                    <p className="text-white text-xs font-semibold flex items-center gap-1">
-                      <Eye className="w-4 h-4" /> {t.quick_view}
-                    </p>
-                    <span className="text-white text-xs font-mono bg-[#B45309] px-2 py-0.5 rounded font-bold">
-                      {product.unit}
-                    </span>
+                  {/* Quick View Button Overlay */}
+                  <div className="absolute inset-0 bg-[#3F2E1E]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => onQuickViewClick(product)}
+                      className="px-4 py-2 bg-white text-[#3F2E1E] text-xs font-bold rounded-lg shadow-lg hover:bg-[#B45309] hover:text-white transition-colors flex items-center gap-1 cursor-pointer focus:outline-none"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>{t.quick_view}</span>
+                    </button>
                   </div>
+
+                  <span className="absolute bottom-2 right-2 text-white text-[10px] font-mono bg-[#3F2E1E]/80 backdrop-blur-xs px-2 py-0.5 rounded font-bold">
+                    {product.unit}
+                  </span>
                 </div>
 
                 {/* Card description details */}
@@ -231,7 +243,7 @@ export default function FeaturedProducts({
                     {/* Price and Unit */}
                     <div className="flex items-baseline justify-between">
                       <span className="text-xl sm:text-2xl font-mono font-black text-[#B45309]">
-                        ₹{product.price}
+                        {currencySymbol}{Math.round(product.price * exchangeRate)}
                         <span className="text-[10px] sm:text-xs text-[#857252] font-sans font-medium ml-1">/{product.unit}</span>
                       </span>
                       <span className="text-[10px] sm:text-xs font-bold text-[#0F766E] border border-[#0F766E]/20 bg-[#0F766E]/5 rounded px-1.5 py-0.5">
@@ -239,58 +251,59 @@ export default function FeaturedProducts({
                       </span>
                     </div>
 
-                    {/* Quantity selectors */}
-                    <div className="grid grid-cols-12 gap-2 items-center">
-                      <div className="col-span-5 flex items-center justify-between border border-[#EADCC6] bg-white rounded-xl h-10 px-2 shadow-inner">
+                    {/* Quantity & Cart Action - Checks Stock Status */}
+                    {product.inStock === false ? (
+                      <div className="w-full h-10 bg-gray-100 text-gray-400 rounded-xl flex items-center justify-center font-bold text-xs uppercase border border-gray-200 select-none gap-1.5">
+                        <AlertCircle className="w-4 h-4 text-gray-400" />
+                        <span>Sold Out (कम पर गयिल)</span>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-12 gap-2 items-center">
+                        <div className="col-span-5 flex items-center justify-between border border-[#EADCC6] bg-white rounded-xl h-10 px-2 shadow-inner">
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.85 }}
+                            onClick={() => handleQuantityChange(product.id, false)}
+                            className="text-[#3F2E1E] hover:text-[#B45309] p-1 focus:outline-none cursor-pointer"
+                            title="Less"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </motion.button>
+                          <span className="font-mono text-xs sm:text-sm font-bold text-[#3F2E1E]">
+                            {qty}
+                          </span>
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.85 }}
+                            onClick={() => handleQuantityChange(product.id, true)}
+                            className="text-[#3F2E1E] hover:text-[#B45309] p-1 focus:outline-none cursor-pointer"
+                            title="More"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </motion.button>
+                        </div>
+
+                        {/* Add to Cart button */}
                         <motion.button
-                          whileHover={{ scale: 1.15 }}
-                          whileTap={{ scale: 0.85 }}
-                          onClick={() => handleQuantityChange(product.id, false)}
-                          className="text-[#3F2E1E] hover:text-[#B45309] p-1 focus:outline-none cursor-pointer"
-                          title="Less"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          animate={isAdded ? {} : { scale: [1, 1.03, 1] }}
+                          transition={isAdded ? { type: "spring", stiffness: 400, damping: 10 } : {
+                            scale: { repeat: Infinity, duration: 1.8, ease: "easeInOut" },
+                            type: "spring", stiffness: 400, damping: 10
+                          }}
+                          onClick={() => handleAddToCartWithAnimation(product)}
+                          className={`col-span-7 h-10 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors shadow focus:outline-none cursor-pointer ${
+                            isAdded
+                              ? 'bg-[#0F766E] text-white shadow-inner scale-95'
+                              : 'bg-[#B45309] hover:bg-[#853A00] text-white hover:shadow-md'
+                          }`}
                         >
-                          <Minus className="w-3.5 h-3.5" />
-                        </motion.button>
-                        <span className="font-mono text-xs sm:text-sm font-bold text-[#3F2E1E]">
-                          {qty}
-                        </span>
-                        <motion.button
-                          whileHover={{ scale: 1.15 }}
-                          whileTap={{ scale: 0.85 }}
-                          onClick={() => handleQuantityChange(product.id, true)}
-                          className="text-[#3F2E1E] hover:text-[#B45309] p-1 focus:outline-none cursor-pointer"
-                          title="More"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
+                          <ShoppingBag className="w-4 h-4" />
+                          <span>{isAdded ? t.added : t.add_to_cart}</span>
                         </motion.button>
                       </div>
-
-                      {/* Add to Cart button with spring-hover and subtle automatic conversion infinite pulse */}
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        animate={isAdded ? {} : { scale: [1, 1.03, 1] }}
-                        transition={isAdded ? { type: "spring", stiffness: 400, damping: 10 } : {
-                          scale: {
-                            repeat: Infinity,
-                            duration: 1.8,
-                            ease: "easeInOut"
-                          },
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 10
-                        }}
-                        onClick={() => handleAddToCartWithAnimation(product)}
-                        className={`col-span-7 h-10 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors shadow focus:outline-none cursor-pointer ${
-                          isAdded
-                            ? 'bg-[#0F766E] text-white shadow-inner scale-95'
-                            : 'bg-[#B45309] hover:bg-[#853A00] text-white hover:shadow-md'
-                        }`}
-                      >
-                        <ShoppingBag className="w-4 h-4 animate-bounce" />
-                        <span>{isAdded ? t.added : t.add_to_cart}</span>
-                      </motion.button>
-                    </div>
+                    )}
 
                   </div>
 

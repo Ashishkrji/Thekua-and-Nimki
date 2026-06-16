@@ -24,11 +24,15 @@ import RitualsAndTraditions from './components/RitualsAndTraditions';
 import TraditionalRecipes from './components/TraditionalRecipes';
 
 import { Product, CartItem, Language } from './types';
-import { PRODUCTS, TRANSLATIONS } from './data';
+import { TRANSLATIONS } from './data';
 import { Compass, Award, Mail, Phone, MapPin, Instagram, Check, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ShopifyProvider, useShopify } from './context/ShopifyContext';
+import ShopifyMerchantPanel from './components/ShopifyMerchantPanel';
+import ShopifyQuickView from './components/ShopifyQuickView';
 
-export default function App() {
+export function ShopifyStorefront() {
+  const { products: shopifyProducts, settings } = useShopify();
   const [language, setLanguage] = useState<Language>('en');
   const [activeView, setActiveView] = useState<'home' | 'about' | 'contact' | 'faqs' | 'checkout' | 'shipping' | 'privacy' | 'refund' | 'terms'>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -42,6 +46,7 @@ export default function App() {
   
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   const t = TRANSLATIONS[language];
 
@@ -155,7 +160,7 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: 'instant' });
         }}
         onProductClick={handleProductDetailClick}
-        products={PRODUCTS}
+        products={shopifyProducts}
       />
 
       {/* Main Core Views Section */}
@@ -222,6 +227,7 @@ export default function App() {
                   onProductClick={handleProductDetailClick}
                   wishlist={wishlist}
                   onToggleWishlist={handleToggleWishlist}
+                  onQuickViewClick={(p) => setQuickViewProduct(p)}
                 />
               </motion.div>
 
@@ -389,6 +395,25 @@ export default function App() {
       {/* Floating AI Grandma Chatbot (Aesthetic & Highly Interactive!) */}
       <Chatbot language={language} />
 
+      {/* Floating Shopify Merchant Admin Control dashboard */}
+      <ShopifyMerchantPanel language={language} />
+
+      {/* Shopify Live Quick View Lightbox and Instant Order checkout */}
+      <ShopifyQuickView
+        product={quickViewProduct}
+        isOpen={quickViewProduct !== null}
+        onClose={() => setQuickViewProduct(null)}
+        onAddToCart={handleAddToCart}
+        onInstantBuy={(p, q) => {
+          // Direct Shopify quick setup Buy It Now redirects
+          setCart([{ product: p, quantity: q }]);
+          setQuickViewProduct(null);
+          setActiveView('checkout');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        language={language}
+      />
+
       {/* Sliding Slide Cart Drawer overlay panel */}
       <Cart
         isOpen={isCartOpen}
@@ -539,7 +564,7 @@ export default function App() {
         </div>
 
         {/* FSSAI Registration badge and license verification details */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#A39281] font-mono gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex flex-col sm:sm:flex-row items-center justify-between text-[11px] text-[#A39281] font-mono gap-4">
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-emerald-500" />
             <span>FSSAI Registered Manufacturer No. <strong>10023021008742</strong></span>
@@ -552,5 +577,13 @@ export default function App() {
       </footer>
 
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ShopifyProvider>
+      <ShopifyStorefront />
+    </ShopifyProvider>
   );
 }

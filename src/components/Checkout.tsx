@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShoppingBag, ArrowLeft, Send, CheckCircle2, Award, Clock } from 'lucide-react';
 import { CartItem, Language, Order } from '../types';
 import { TRANSLATIONS } from '../data';
+import { useShopify } from '../context/ShopifyContext';
 
 interface CheckoutProps {
   language: Language;
@@ -11,6 +12,7 @@ interface CheckoutProps {
 }
 
 export default function Checkout({ language, cart, onBack, onClearCart }: CheckoutProps) {
+  const { settings, addOrder } = useShopify();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -23,13 +25,24 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
 
   const t = TRANSLATIONS[language];
 
-  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const isFreeDelivery = subtotal >= 499;
-  const shippingCharge = subtotal > 0 && !isFreeDelivery ? 60 : 0;
+  // Shopify Dynamic currency parameters
+  const currencySymbol = settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₹';
+  const exchangeRate = settings.currency === 'USD' ? 0.012 : settings.currency === 'EUR' ? 0.011 : 1;
+
+  const rawSubtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const subtotal = Math.round(rawSubtotal * exchangeRate);
+  
+  const isFreeDelivery = rawSubtotal >= settings.freeShippingThreshold;
+  const shippingCharge = rawSubtotal > 0 && !isFreeDelivery ? Math.round(settings.shippingFee * exchangeRate) : 0;
+  
+  // Tax calculations based on Shopify settings (e.g., 5%, 12%, 18%)
+  const taxAmount = Math.round((rawSubtotal * (settings.taxRate / 100)) * exchangeRate);
   
   // Hardcoded promo code discount fallback for simplicity matching Cart.tsx
-  const discount = subtotal >= 499 ? 50 : 0;
-  const total = subtotal + shippingCharge - discount;
+  const rawDiscount = rawSubtotal >= 499 ? 50 : 0;
+  const discount = Math.round(rawDiscount * exchangeRate);
+  
+  const total = subtotal + shippingCharge + taxAmount - discount;
 
   const validate = () => {
     const tempErrors: Record<string, string> = {};
@@ -47,16 +60,20 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
     e.preventDefault();
     if (!validate()) return;
 
-    // Build Mock Order
+    // Build Mock Shopify Order
+    const orderId = `S-MAATI-${Math.floor(100000 + Math.random() * 900000)}`;
     const cleanOrder: Order = {
-      id: `MAATI-${Math.floor(100000 + Math.random() * 900000)}`,
+      id: orderId,
       items: [...cart],
       customerDetails: { name, phone, address, city, pincode },
       paymentMethod,
       status: 'ordered',
-      total,
+      total: Math.round(rawSubtotal + (rawSubtotal >= settings.freeShippingThreshold ? 0 : settings.shippingFee) + (rawSubtotal * (settings.taxRate / 100)) - rawDiscount), // keep total in INR base inside data, display is converted
       date: new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })
     };
+
+    // Save to our live merchant panel context state!
+    addOrder(cleanOrder);
 
     setSuccessOrder(cleanOrder);
   };
@@ -105,7 +122,7 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
                 <p><strong>Contact Direct:</strong> +91 {successOrder.customerDetails.phone}</p>
                 <p><strong>Postal Address:</strong> {successOrder.customerDetails.address}, {successOrder.customerDetails.city} - {successOrder.customerDetails.pincode}</p>
                 <p><strong>Payment Mode:</strong> {successOrder.paymentMethod} (Pay upon safe home dispatch)</p>
-                <p><strong>Estimated Total Amount:</strong> <strong className="text-base text-[#B45309] font-mono">₹{successOrder.total}</strong></p>
+                <p><strong>Estimated Total Amount:</strong> <strong className="text-base text-[#B45309] font-mono">{currencySymbol}{Math.round(successOrder.total * exchangeRate)}</strong></p>
               </div>
             </div>
 
@@ -303,9 +320,9 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
                   <img src={item.product.images[0]} alt={item.product.name} className="w-10 h-10 rounded-lg object-cover bg-amber-50" referrerPolicy="no-referrer" />
                   <div className="flex-1">
                     <p className="font-serif font-bold text-[#3F2E1E] leading-tight">{item.product.name}</p>
-                    <p className="text-[10px] font-mono text-[#857252] mt-0.5">₹{item.product.price} x {item.quantity}</p>
+                    <p className="text-[10px] font-mono text-[#857252] mt-0.5">{currencySymbol}{Math.round(item.product.price * exchangeRate)} x {item.quantity}</p>
                   </div>
-                  <span className="font-mono font-black text-[#3F2E1E]">₹{item.product.price * item.quantity}</span>
+                  <span className="font-mono font-black text-[#3F2E1E]">{currencySymbol}{Math.round(item.product.price * item.quantity * exchangeRate)}</span>
                 </div>
               ))}
             </div>
@@ -314,24 +331,31 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
             <div className="pt-4 border-t border-[#EADCC6] space-y-2.5 text-xs">
               <div className="flex justify-between text-[#857252]">
                 <span>Basket Net value</span>
-                <span className="font-mono">₹{subtotal}</span>
+                <span className="font-mono">{currencySymbol}{subtotal}</span>
               </div>
               
               {discount > 0 && (
                 <div className="flex justify-between text-emerald-700 font-bold">
                   <span>MAATI50 Coupon</span>
-                  <span className="font-mono">-₹{discount}</span>
+                  <span className="font-mono">-{currencySymbol}{discount}</span>
+                </div>
+              )}
+
+              {taxAmount > 0 && (
+                <div className="flex justify-between text-[#857252]">
+                  <span>Estimated Tax ({settings.taxRate}%)</span>
+                  <span className="font-mono">+{currencySymbol}{taxAmount}</span>
                 </div>
               )}
 
               <div className="flex justify-between text-[#857252]">
                 <span>Courier & Nitrogen Care Packaging</span>
-                <span className="font-mono">{isFreeDelivery ? 'FREE' : `₹${shippingCharge}`}</span>
+                <span className="font-mono">{isFreeDelivery ? 'FREE' : `${currencySymbol}${shippingCharge}`}</span>
               </div>
 
               <div className="border-t border-[#EADCC6]/60 pt-2.5 flex justify-between text-[#3F2E1E] text-base font-black">
                 <span>Total Payable</span>
-                <span className="font-mono text-[#B45309]">₹{total}</span>
+                <span className="font-mono text-[#B45309]">{currencySymbol}{total}</span>
               </div>
             </div>
 
