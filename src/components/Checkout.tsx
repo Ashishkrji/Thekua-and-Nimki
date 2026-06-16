@@ -109,23 +109,40 @@ export default function Checkout({ language, cart, onBack, onClearCart }: Checko
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <div className="flex flex-col gap-2.5 pt-4">
               <button
-                onClick={resetAll}
-                className="w-full h-11 bg-[#B45309] hover:bg-[#853A00] text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow cursor-pointer focus:outline-none"
+                onClick={() => {
+                  resetAll();
+                  setTimeout(() => {
+                    const trackingEl = document.getElementById('order-status-tracker-section');
+                    if (trackingEl) {
+                      trackingEl.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }, 150);
+                }}
+                className="w-full h-11 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow cursor-pointer focus:outline-none flex items-center justify-center gap-2"
               >
-                Back to Kitchen
+                <span>🚚 Track Baking & Live Transit</span>
               </button>
 
-              <a
-                href={`https://api.whatsapp.com/send?phone=918210612345&text=Namaste%20Maati,%20I%20placed%20order%20${successOrder.id}.%20Please%20confirm!`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full h-11 bg-[#0F766E] hover:bg-[#08534C] text-white rounded-xl font-sans font-bold text-xs flex items-center justify-center gap-1.5 border border-[#0F766E] shadow transition-colors"
-                title="Send confirmation direct to grandma"
-              >
-                <span>Notify via WhatsApp</span>
-              </a>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={resetAll}
+                  className="w-full h-11 bg-[#B45309] hover:bg-[#853A00] text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow cursor-pointer focus:outline-none"
+                >
+                  Back to Kitchen
+                </button>
+
+                <a
+                  href={`https://api.whatsapp.com/send?phone=918210612345&text=Namaste%20Maati,%20I%20placed%20order%20${successOrder.id}.%20Please%20confirm!`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full h-11 bg-[#0F766E] hover:bg-[#08534C] text-white rounded-xl font-sans font-bold text-xs flex items-center justify-center gap-1.5 border border-[#0F766E] shadow transition-colors"
+                  title="Send confirmation direct to grandma"
+                >
+                  <span>WhatsApp Confirm</span>
+                </a>
+              </div>
             </div>
 
             {/* Small traditional reassurance footer */}

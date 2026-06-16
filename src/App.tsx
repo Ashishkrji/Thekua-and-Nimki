@@ -16,6 +16,12 @@ import ContactPage from './components/ContactPage';
 import FAQSection from './components/FAQSection';
 import Chatbot from './components/Chatbot';
 import Policies from './components/Policies';
+import GiftBoxBuilder from './components/GiftBoxBuilder';
+import FarmMapTracker from './components/FarmMapTracker';
+import TraceMyBatch from './components/TraceMyBatch';
+import OrderStatusTracker from './components/OrderStatusTracker';
+import RitualsAndTraditions from './components/RitualsAndTraditions';
+import TraditionalRecipes from './components/TraditionalRecipes';
 
 import { Product, CartItem, Language } from './types';
 import { PRODUCTS, TRANSLATIONS } from './data';
@@ -194,34 +200,158 @@ export default function App() {
               />
 
               {/* 2. Trust indicator bar */}
-              <TrustBar language={language} />
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, type: "spring", stiffness: 50, damping: 12 }}
+              >
+                <TrustBar language={language} />
+              </motion.div>
 
               {/* 3. Featured snack card grid */}
-              <FeaturedProducts
-                language={language}
-                onAddToCart={handleAddToCart}
-                onProductClick={handleProductDetailClick}
-                wishlist={wishlist}
-                onToggleWishlist={handleToggleWishlist}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <FeaturedProducts
+                  language={language}
+                  onAddToCart={handleAddToCart}
+                  onProductClick={handleProductDetailClick}
+                  wishlist={wishlist}
+                  onToggleWishlist={handleToggleWishlist}
+                />
+              </motion.div>
+
+              {/* 3b. Interactive Custom Festival Gift Box builder */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <GiftBoxBuilder
+                  language={language}
+                  onAddToCart={handleAddToCart}
+                  openCart={() => setIsCartOpen(true)}
+                />
+              </motion.div>
+
+              {/* 3c. Traditional Heritage Recipes Cooking Guides Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <TraditionalRecipes
+                  language={language}
+                  onAddToCart={handleAddToCart}
+                  openCart={() => setIsCartOpen(true)}
+                />
+              </motion.div>
 
               {/* 4. Split-layout story section */}
-              <Storytelling language={language} />
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <Storytelling language={language} />
+              </motion.div>
 
               {/* 4b. Dynamic Storytelling Gallery with motion scroll reveals */}
-              <StorytellingGallery language={language} />
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <StorytellingGallery language={language} />
+              </motion.div>
+
+              {/* 4c. Interactive India sourcing and logistics map tracker */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <FarmMapTracker language={language} />
+              </motion.div>
 
               {/* 5. Why chooses us bento promise list */}
-              <WhyChooseUs language={language} />
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <WhyChooseUs language={language} />
+              </motion.div>
+
+              {/* 5b. Transparent batch tracer lookups and digital authenticity tag generator */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <TraceMyBatch language={language} />
+              </motion.div>
+
+              {/* 5c. Interactive order tracking journey tracker */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <OrderStatusTracker language={language} />
+              </motion.div>
 
               {/* 6. Customer reviews slider */}
-              <Reviews language={language} />
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <Reviews language={language} />
+              </motion.div>
 
               {/* 7. Instagram Reels mockup flow */}
-              <InstagramReels language={language} />
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <InstagramReels language={language} />
+              </motion.div>
+
+              {/* 7b. Auspicious rituals guide and calendar integration triggers */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <RitualsAndTraditions language={language} />
+              </motion.div>
 
               {/* 8. Collapsible FAQ Accordions */}
-              <FAQSection language={language} />
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 45, damping: 14 }}
+              >
+                <FAQSection language={language} />
+              </motion.div>
 
             </motion.div>
           ) : activeView === 'about' ? (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Star, Eye, Heart, ShoppingBag, Plus, Minus, Info } from 'lucide-react';
 import { Product, Language } from '../types';
-import { PRODUCTS, TRANSLATIONS } from '../data';
+import { PRODUCTS, TRANSLATIONS, getLocalizedBadge, getLocalizedShelfLife } from '../data';
 import { motion } from 'motion/react';
 
 interface FeaturedProductsProps {
@@ -69,8 +69,11 @@ export default function FeaturedProducts({
         </div>
 
         {/* Filter Category Tabs */}
-        <div className="flex justify-center gap-3 mb-12">
-          <button
+        <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-10 px-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 12 }}
             onClick={() => setSelectedCategory('all')}
             className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all focus:outline-none cursor-pointer ${
               selectedCategory === 'all'
@@ -79,8 +82,11 @@ export default function FeaturedProducts({
             }`}
           >
             {t.tab_all}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 12 }}
             onClick={() => setSelectedCategory('thekua')}
             className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all focus:outline-none cursor-pointer ${
               selectedCategory === 'thekua'
@@ -89,8 +95,11 @@ export default function FeaturedProducts({
             }`}
           >
             {t.tab_thekua}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 12 }}
             onClick={() => setSelectedCategory('nimki')}
             className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all focus:outline-none cursor-pointer ${
               selectedCategory === 'nimki'
@@ -99,11 +108,11 @@ export default function FeaturedProducts({
             }`}
           >
             {t.tab_nimki}
-          </button>
+          </motion.button>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Products Grid with responsive padding/column adjusters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-8 lg:gap-10 px-2 sm:px-0">
           {filteredProducts.map((product) => {
             const qty = quantities[product.id] || 1;
             const inWishlist = isProductInWishlist(product);
@@ -116,17 +125,30 @@ export default function FeaturedProducts({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.4 }}
-                className="group relative flex flex-col justify-between bg-[#FBF9F4] rounded-2xl border border-[#EADCC6] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
+                whileHover={{ 
+                  y: -6, 
+                  scale: 1.015, 
+                  boxShadow: "0 20px 25px -5px rgba(180, 83, 9, 0.08), 0 10px 10px -5px rgba(180, 83, 9, 0.04)" 
+                }}
+                transition={{ 
+                  duration: 0.3, 
+                  type: "spring", 
+                  stiffness: 300, 
+                  damping: 20 
+                }}
+                className="group relative flex flex-col justify-between bg-[#FBF9F4] rounded-2xl border border-[#EADCC6] hover:border-[#B45309]/30 shadow-sm transition-colors duration-300 overflow-hidden"
               >
                 {/* Wishlist Button overlays */}
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.85 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 10 }}
                   onClick={() => onToggleWishlist(product)}
-                  className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow hover:bg-white flex items-center justify-center transition-colors focus:outline-none"
+                  className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow hover:bg-white flex items-center justify-center transition-colors focus:outline-none cursor-pointer"
                   title="Add to Wishlist"
                 >
                   <Heart className={`w-5 h-5 ${inWishlist ? 'fill-red-500 text-red-500' : 'text-[#3F2E1E]'}`} />
-                </button>
+                </motion.button>
 
                 {/* Best Seller / Offer badges */}
                 {product.isBestSeller && (
@@ -160,12 +182,12 @@ export default function FeaturedProducts({
                 </div>
 
                 {/* Card description details */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
                   
                   <div className="space-y-2">
                     {/* Category Label and Rating stars */}
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#B45309] bg-[#EADCC6]/30 px-2 py-0.5 rounded">
+                      <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-[#B45309] bg-[#EADCC6]/30 px-2 py-0.5 rounded">
                         {product.category === 'thekua' ? 'Traditional Thekua' : 'Crispy Nimki'}
                       </span>
                       <div className="flex items-center gap-1 font-mono text-xs font-bold text-[#C59B27]">
@@ -175,29 +197,29 @@ export default function FeaturedProducts({
                       </div>
                     </div>
 
-                    {/* Title */}
+                    {/* Title with font scaling based on media viewport */}
                     <h3 
                       onClick={() => onProductClick(product)}
-                      className="text-lg font-serif font-bold text-[#3F2E1E] group-hover:text-[#B45309] transition-colors cursor-pointer"
+                      className="text-base sm:text-lg lg:text-xl font-serif font-black text-[#3F2E1E] group-hover:text-[#B45309] transition-colors cursor-pointer leading-tight"
                     >
-                      {product.name}
+                      {t[`${product.translationKey}_name`] || product.name}
                     </h3>
 
                     {/* Shelf Life alert */}
                     <div className="flex items-center gap-1 text-[10px] font-semibold text-[#0F766E]">
-                      <span>🌱 Clean Eat • Shelf Life: {product.shelfLife}</span>
+                      <span>🌱 Clean Eat • Shelf Life: {getLocalizedShelfLife(product.shelfLife, language)}</span>
                     </div>
 
-                    {/* Short description */}
-                    <p className="text-xs text-[#5C4D3C] line-clamp-2 leading-relaxed">
-                      {product.description}
+                    {/* Short description with customizable text scaling */}
+                    <p className="text-xs sm:text-[13px] text-[#5C4D3C] line-clamp-2 leading-relaxed">
+                      {t[`${product.translationKey}_desc`] || product.description}
                     </p>
 
                     {/* Badges pills list */}
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {product.badges.slice(0, 2).map((badge, bIdx) => (
-                        <span key={bIdx} className="text-[9px] font-bold tracking-wide text-[#857252] bg-[#F1EAD9] rounded border border-[#EADCC6] px-2 py-0.5">
-                          ✓ {badge}
+                        <span key={bIdx} className="text-[9px] sm:text-[10px] font-bold tracking-wide text-[#857252] bg-[#F1EAD9] rounded border border-[#EADCC6] px-2 py-0.5">
+                          ✓ {getLocalizedBadge(badge, language)}
                         </span>
                       ))}
                     </div>
@@ -208,11 +230,11 @@ export default function FeaturedProducts({
                     
                     {/* Price and Unit */}
                     <div className="flex items-baseline justify-between">
-                      <span className="text-2xl font-mono font-black text-[#B45309]">
+                      <span className="text-xl sm:text-2xl font-mono font-black text-[#B45309]">
                         ₹{product.price}
-                        <span className="text-[10px] text-[#857252] font-sans font-medium ml-1">/{product.unit}</span>
+                        <span className="text-[10px] sm:text-xs text-[#857252] font-sans font-medium ml-1">/{product.unit}</span>
                       </span>
-                      <span className="text-[10px] font-bold text-[#0F766E] border border-[#0F766E]/20 bg-[#0F766E]/5 rounded px-1.5 py-0.5">
+                      <span className="text-[10px] sm:text-xs font-bold text-[#0F766E] border border-[#0F766E]/20 bg-[#0F766E]/5 rounded px-1.5 py-0.5">
                         📦 COD Available
                       </span>
                     </div>
@@ -220,37 +242,54 @@ export default function FeaturedProducts({
                     {/* Quantity selectors */}
                     <div className="grid grid-cols-12 gap-2 items-center">
                       <div className="col-span-5 flex items-center justify-between border border-[#EADCC6] bg-white rounded-xl h-10 px-2 shadow-inner">
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.85 }}
                           onClick={() => handleQuantityChange(product.id, false)}
-                          className="text-[#3F2E1E] hover:text-[#B45309] p-1 focus:outline-none"
+                          className="text-[#3F2E1E] hover:text-[#B45309] p-1 focus:outline-none cursor-pointer"
                           title="Less"
                         >
                           <Minus className="w-3.5 h-3.5" />
-                        </button>
-                        <span className="font-mono text-xs font-bold text-[#3F2E1E]">
+                        </motion.button>
+                        <span className="font-mono text-xs sm:text-sm font-bold text-[#3F2E1E]">
                           {qty}
                         </span>
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.85 }}
                           onClick={() => handleQuantityChange(product.id, true)}
-                          className="text-[#3F2E1E] hover:text-[#B45309] p-1 focus:outline-none"
+                          className="text-[#3F2E1E] hover:text-[#B45309] p-1 focus:outline-none cursor-pointer"
                           title="More"
                         >
                           <Plus className="w-3.5 h-3.5" />
-                        </button>
+                        </motion.button>
                       </div>
 
-                      {/* Add to Cart button */}
-                      <button
+                      {/* Add to Cart button with spring-hover and subtle automatic conversion infinite pulse */}
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        animate={isAdded ? {} : { scale: [1, 1.03, 1] }}
+                        transition={isAdded ? { type: "spring", stiffness: 400, damping: 10 } : {
+                          scale: {
+                            repeat: Infinity,
+                            duration: 1.8,
+                            ease: "easeInOut"
+                          },
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 10
+                        }}
                         onClick={() => handleAddToCartWithAnimation(product)}
-                        className={`col-span-7 h-10 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow focus:outline-none cursor-pointer ${
+                        className={`col-span-7 h-10 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors shadow focus:outline-none cursor-pointer ${
                           isAdded
                             ? 'bg-[#0F766E] text-white shadow-inner scale-95'
                             : 'bg-[#B45309] hover:bg-[#853A00] text-white hover:shadow-md'
                         }`}
                       >
-                        <ShoppingBag className="w-4 h-4" />
+                        <ShoppingBag className="w-4 h-4 animate-bounce" />
                         <span>{isAdded ? t.added : t.add_to_cart}</span>
-                      </button>
+                      </motion.button>
                     </div>
 
                   </div>

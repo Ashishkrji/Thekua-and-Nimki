@@ -20,6 +20,7 @@ export interface Product {
   };
   badges: string[]; // e.g. ["Desi Ghee", "No White Sugar", "Traditional"]
   isBestSeller?: boolean;
+  inStock?: boolean;
 }
 
 export interface CartItem {

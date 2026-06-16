@@ -334,7 +334,7 @@ export default function StorytellingGallery({ language }: StorytellingGalleryPro
         {/* BRIGHT RUSTIC MASONRY/GRID WITH MOTION SCROLL REVEALS */}
         <motion.div
           layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-8 lg:gap-10 items-start px-2 sm:px-0"
         >
           <AnimatePresence mode="popLayout">
             {filteredItems.map((item, index) => {
@@ -348,8 +348,13 @@ export default function StorytellingGallery({ language }: StorytellingGalleryPro
                   initial={{ opacity: 0, scale: 0.95, y: 30 }}
                   whileInView={{ opacity: 1, scale: 1, y: 0 }}
                   viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-[#FBF9F4] p-4.5 rounded-3xl border border-[#EADCC6] shadow-sm hover:shadow-xl hover:border-[#B45309]/50 transition-all duration-300 flex flex-col justify-between group overflow-hidden relative cursor-pointer"
+                  whileHover={{ 
+                    y: -6, 
+                    scale: 1.015,
+                    boxShadow: "0 20px 25px -5px rgba(180, 83, 9, 0.08), 0 10px 10px -5px rgba(180, 83, 9, 0.04)"
+                  }}
+                  transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 260, damping: 20 }}
+                  className="bg-[#FBF9F4] p-4 sm:p-5 md:p-6 rounded-3xl border border-[#EADCC6] shadow-sm hover:shadow-xl hover:border-[#B45309]/50 transition-all duration-300 flex flex-col justify-between group overflow-hidden relative cursor-pointer"
                   onClick={() => setSelectedItem(item)}
                 >
                   

@@ -2,6 +2,7 @@ import React from 'react';
 import { Heart, ShieldCheck, Flame, Milk, Truck, ShieldAlert } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../data';
+import { motion } from 'motion/react';
 
 interface TrustBarProps {
   language: Language;
@@ -38,19 +39,41 @@ export default function TrustBar({ language }: TrustBarProps) {
     }
   ];
 
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+  };
+
   return (
     <div id="trust-bar" className="bg-[#3F2E1E] text-[#FAF6EE] py-6 relative z-20">
       {/* Decorative Traditional border overlay */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-repeat-x bg-[bottom_left]" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"5\" viewBox=\"0 0 20 5\"><path d=\"M0,5 L10,0 L20,5 Z\" fill=\"%23FAF6EE\"/></svg>')" }} />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 divide-y md:divide-y-0 md:divide-x divide-[#FAF6EE]/10 text-center">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid grid-cols-2 md:grid-cols-5 gap-6 divide-y md:divide-y-0 md:divide-x divide-[#FAF6EE]/10 text-center"
+        >
           {points.map((point, index) => (
-            <div 
+            <motion.div 
               key={index} 
-              className={`flex flex-col items-center justify-center pt-4 md:pt-0 pb-2 md:pb-0 px-2 group hover:-translate-y-0.5 transition-transform`}
+              variants={itemVariants}
+              whileHover={{ scale: 1.05 }}
+              className={`flex flex-col items-center justify-center pt-4 md:pt-0 pb-2 md:pb-0 px-2 group transition-all`}
             >
-              <div className="w-10 h-10 rounded-full bg-[#FAF6EE] flex items-center justify-center shadow-md mb-2 group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 rounded-full bg-[#FAF6EE] flex items-center justify-center shadow-md mb-2 group-hover:rotate-12 transition-transform">
                 {point.icon}
               </div>
               <h3 className="text-xs sm:text-sm font-bold tracking-wide text-amber-50">
@@ -59,9 +82,9 @@ export default function TrustBar({ language }: TrustBarProps) {
               <p className="text-[10px] sm:text-xs text-amber-200/70 font-medium font-sans">
                 {point.sub}
               </p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-repeat-x" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"5\" viewBox=\"0 0 20 5\"><path d=\"M0,0 L10,5 L20,0 Z\" fill=\"%23FAF6EE\"/></svg>')" }} />

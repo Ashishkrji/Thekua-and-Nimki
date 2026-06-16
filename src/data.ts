@@ -79,7 +79,8 @@ export const PRODUCTS: Product[] = [
       carbs: '65.2g',
       fat: '15.4g'
     },
-    badges: ['Elaichi Fragrant', 'No Palm Oil', 'Stone-pressed', 'Fiber Rich']
+    badges: ['Elaichi Fragrant', 'No Palm Oil', 'Stone-pressed', 'Fiber Rich'],
+    inStock: false
   },
   {
     id: 'ajwain-nimki',
@@ -158,7 +159,8 @@ export const PRODUCTS: Product[] = [
       carbs: '53.1g',
       fat: '18.1g'
     },
-    badges: ['Teekha Spicy', 'Infused Chilies', 'No Artificial Colors', 'Immunity Spices']
+    badges: ['Teekha Spicy', 'Infused Chilies', 'No Artificial Colors', 'Immunity Spices'],
+    inStock: false
   }
 ];
 
@@ -331,6 +333,24 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     order_success_sub: 'Thank you for supporting traditional village cooking. Dadi Maa is already starting on your batch!',
     chatbot_welcome: 'Namaste! I am Dadi Maa’s AI Rasoi Assistant. Ask me anything about our traditional recipes, shelf life, or jaggery sourcing!',
     checkout_title: 'Maa’s Kitchen Dispatch Details',
+    gur_thekua_name: 'Gur & Saunf Thekua',
+    gur_thekua_desc: 'An aromatic cookie made with premium whole wheat, organic desi jaggery, crushed fennel seeds, and baked slowly in wood-fired ovens.',
+    gur_thekua_story: 'Prepared exactly as our Grandmothers made back in the village using hand-carved wooden moulds called "Sancha", leaving a beautiful leaf print.',
+    desi_ghee_thekua_name: 'Sancha Desi Ghee Thekua',
+    desi_ghee_thekua_desc: 'Rich, melt-in-mouth traditional biscuit rich in A2 Desi Ghee and sweetened with organic sulphurless sugar. Indulgent, authentic, and golden.',
+    desi_ghee_thekua_story: 'Kneaded strictly by hand with generous dollops of warm Desi Ghee. The rich, buttery crackling texture is a heritage recipe preserved across five generations.',
+    elaichi_thekua_name: 'Cardamom & Coconut Thekua',
+    elaichi_thekua_desc: 'Crisp traditional cookies loaded with fresh hand-pounded green cardamom pods and crunchy dried coconut shreds for an exotic sweet flavor.',
+    elaichi_thekua_story: 'This variation is inspired by festive mornings under the neem tree, where cardamom pods would be cracked on large stone pestiles, filling the home with aroma.',
+    ajwain_nimki_name: 'Desi Ghee Ajwain Nimki',
+    ajwain_nimki_desc: 'Crispy, crunchy diamond-cut savory snack richly seasoned with robust whole carom seeds (Ajwain) and sea salt. The perfect companion for hot Chai.',
+    ajwain_nimki_story: 'Every crunch carries the sharp notes of digestive ajwain, which is hand-roasted in low heat before being kneaded into flaky pastry sheets, folded perfectly 16 times.',
+    masala_nimki_name: '12-Spices Masala Nimki',
+    masala_nimki_desc: 'Grandma’s secret 12-spice spice blend sprinkled onto layered savory ribbons. Highly addictive, savory, tangy, and deeply satisfying.',
+    masala_nimki_story: 'The masala mix uses Amchoor (sun-dried mango powder), stone-ground black pepper, roasted cumin, and black rock salt, blended by hand in stone mortars.',
+    spicy_nimki_name: 'Teekha Guntur Nimki',
+    spicy_nimki_desc: 'For those who love a spicy kick! Seasoned with sun-dried Guntur red red-chili flakes and green chilies kneaded beautifully into the flaky wheat ribbons.',
+    spicy_nimki_story: 'This Nimki pays homage to the vibrant heat of rural bazaars. The dough is infused with fresh paste of dark green chillies, offering a spicy burst in every bite.',
   },
   hi: {
     brand_name: 'माटी',
@@ -391,6 +411,24 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     order_success_sub: 'पारंपरिक चूल्हे और महिलाओं के रोजगार का समर्थन करने के लिए धन्यवाद। दादी माँ ने तैयारी शुरू कर दी है!',
     chatbot_welcome: 'प्रणाम! हम दादी माँ के एआई रसोई सहायक बानी। हमरा से गुड़ की शुद्धता, ठेकुआ के शेल्फ लाइफ या डिलीवरी के बारे में कुछ भी पूछीं!',
     checkout_title: 'माँ की रसोई से भेजने का विवरण',
+    gur_thekua_name: 'गुड़ और सौंफ ठेकुआ',
+    gur_thekua_desc: 'प्रीमियम गेहूं के आटे, जैविक देसी गुड़, सौंफ की सौंधी खुशबू और मिट्टी के चूल्हे पर पके पारंपरिक मीठे सांचे वाले कुकीज़।',
+    gur_thekua_story: 'यह बिल्कुल वैसे ही बनाया जाता है जैसे हमारी दादियां गाँव में बनाती थीं - लकड़ी के नक्काशीदार "सांचे" से सुंदर पत्ती के डिजाइन के साथ तैयार किया हुआ।',
+    desi_ghee_thekua_name: 'सांचा देसी घी ठेकुआ',
+    desi_ghee_thekua_desc: 'मुंह में घुलने वाला समृद्ध ए२ देसी घी से बना पारंपरिक ठेकुआ, जैविक चीनी से मीठा, गहरा सुनहरा और लजीज।',
+    desi_ghee_thekua_story: 'दानेदार देसी घी की प्रचुर मात्रा के साथ पूरी तरह हाथ से गूंथा हुआ। पांच पीढ़ियों से संजोई गई यह विरासत वाली रेसिपी है।',
+    elaichi_thekua_name: 'इलायची और नारियल ठेकुआ',
+    elaichi_thekua_desc: 'हाथ से कुटी ताजी हरी इलायची और सूखे नारियल के लच्छों के स्वाद और भीनी खुशबू से भरपूर खस्ता मीठा ठेकुआ।',
+    elaichi_thekua_story: 'यह रेसिपी नीम के पेड़ के नीचे त्योहारों की उन सुबहों से प्रेरित है जहां पत्थर की सिल-बट्टे पर इलायची कूटी जाती थी।',
+    ajwain_nimki_name: 'देसी घी अजवाइन निमकी',
+    ajwain_nimki_desc: 'कुरकुरी, परतदार डायमंड कटी हुई पारंपरिक निमकी, अजवाइन और समुद्री नमक के बेहतरीन संतुलित स्वाद के साथ। चाय का सच्चा साथी।',
+    ajwain_nimki_story: 'हर टुकड़े में पाचक अजवाइन का तीखा स्वाद है, जिसे पूरी १६ परतों में गूंथकर एकदम खस्ता बनाया गया है।',
+    masala_nimki_name: '१२-मसाला रिबन निमकी',
+    masala_nimki_desc: 'दादी मां के सीक्रेट १२ मसालों के मिश्रण के चटपटे तीखे स्वाद वाली लच्छेदार खस्ता निमकी। बेहद स्वादिष्ट और कुरकुरी।',
+    masala_nimki_story: 'इस मसाले में आमचूर, कुटी हुई काली मिर्च, भुना हुआ जीरा और काला नमक शामिल है जिसे हाथ से पीसा जाता है।',
+    spicy_nimki_name: 'तीखा गुंटूर निमकी',
+    spicy_nimki_desc: 'तीखे स्वाद के दीवानों के लिए! प्रसिद्ध गुंटूर सूखी लाल मिर्च के फ्लेक्स और ताजी हरी मिर्च के तीखेपन वाली खस्ता तीखी निमकी।',
+    spicy_nimki_story: 'गाँव के हाट-बाजारों के तीखेपन को समर्पित। आटे में ताजी मिर्च का पेस्ट मिलाकर कुरकुरी पट्टियां तली जाती हैं।',
   },
   bho: {
     brand_name: 'माटी',
@@ -403,7 +441,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     badge_organic: 'गाँव के असली गुड़',
     badge_village: 'दादी-नानी के घरेलू रेसिपी',
     trust_1: 'हाथ के गढ़ल घर के प्यार',
-    trust_2: 'कौनो केमिकल-प्रिजर्वेटिव ना',
+    trust_2: 'कौनो Chemical प्रिजर्वेटिव ना',
     trust_3: 'आर्डर मिलला पर ताज़ा तैयारी',
     trust_4: 'एकदम साफ़-सुथरा ढंग से',
     trust_5: 'पूरा भारत में घर तक पहुँच',
@@ -415,7 +453,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     story_heading: 'हमार कहानी: माटी के सोंध सुगन्ध',
     story_p1: 'गाँव में जब मिट्टी के चूल्हा पर गोइठा के धीमी आंच पर गुड़ पघले, त पूरा टोला-मुहल्ला में इलायची आ सौंफ के महक पसर जाई। महक बता देवे की माई के रसोई चालू बा।',
     story_p2: 'माटी स्नैक्स के संगे, हमनी के ओह सोंध परम्परा आ बचपन के नेह-छोह के रउआ सोझा ले आईल चाहत बानी। हमनी के ठेकुआ आजुओ काठ के लकड़ी वाला सांचा पर हाथ से दबा के बनावल जाला।',
-    story_p3: 'ना कौनों बड़ मशीन, ना कौनों नुकसानदेह डालडा। खाली सेहोर के गेहूं के आटा, गाँव के कोल्हू के गुड़, आ घर के बनल दानेदार देसी घी। स्वाद अइसन की सीधे बचपन के याद आ जाई।',
+    story_p3: 'ना कवनो बड़ मशीन, ना कवनो नुकसानदेह डालडा। खाली सेहोर के गेहूं के आटा, गाँव के कोल्हू के गुड़, आ घर के बनल दानेदार देसी घी। स्वाद अइसन की सीधे बचपन के याद आ जाई।',
     why_heading: 'काहे चुनीं माटी स्नैक्स?',
     why_sub: 'रिफाइंड तेल आ मैदा के पैकेट छोड़ के, शुद्ध घी आ गेहूं से बनल सोंधा सेहतमंद नाश्ता अपनाईं।',
     why_1_title: 'हाथ-चक्की के गेहूं',
@@ -425,7 +463,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     why_3_title: 'गाय के शुद्ध देसी घी',
     why_3_desc: 'पाम आयल के कभो प्रयोग ना होला। असली खस्ता मोयन बदे केवल शुद्ध दानेदार गाय के घी के इस्तेमाल कइल जाला।',
     why_4_title: 'बिना केमिकल ६० दिन ताज़ा',
-    why_4_desc: 'घान तलाते ही हमनी के वैक्यूम पैक क देवेनी, जेसे बिना कौनों केमिकल के २ महीना ले स्नैक्स एकदम करारा आ ताज़ा रहेला।',
+    why_4_desc: 'घान तलाते ही हमनी के वैक्यूम पैक क देवेनी, जेसे बिना कवनो केमिकल के २ महीना ले स्नैक्स एकदम करारा आ ताज़ा रहेला।',
     language_select: 'भाषा चुनीं (बोली)',
     quick_view: 'निकट से देखीं',
     add_to_cart: 'टोकरी में रखीं',
@@ -451,5 +489,172 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     order_success_sub: 'गाँव के पारंपरिक दीदी लोगन के रोजगार देवे बदे धन्यवाद। दादी माई सनेह से घान तैयार करत बाड़ी!',
     chatbot_welcome: 'प्रणाम! हम दादी माई के एआई रसोई सहायक बानी। गुड़ के शुद्धता, ठेकुआ के शेल्फ लाइफ चाहे डिलीवरी के बारे में कुछुओ पूछीं, हम रउआ आपन भाषा भोजपुरी में बताइब!',
     checkout_title: 'माई के रसोई से दुआर तक क पता विवरण',
+    gur_thekua_name: 'गुड़ सौंफ वाला ठकुआ',
+    gur_thekua_desc: 'जांत पर पिसल गेहूं के आटा, गाँव के रसीला कोल्हू के गुड़ आ मोटी हरी सौंफ से सजल चूल्हा पर धीमे सिंकल मीठा ठकुआ।',
+    gur_thekua_story: 'ई बिल्कुल उहे ठेकुआ ह जेके हमनी के दादी-नानी काठ के सांचा पर हाथ से गढ़ के बनाईं, जेपर पत्ता क पवित्र महक रहेला।',
+    desi_ghee_thekua_name: 'गाय घी सांचा ठेकुआ',
+    desi_ghee_thekua_desc: 'मुँह में जाते पघल जाय वाला पारम्परिक घी क ठेकुआ, जैविक चीनी के घोल से बान्हल आ गाय के पीला घी से डबडब खस्ता ठेकुआ।',
+    desi_ghee_thekua_story: 'भोर ही हाथ से दबा के मथ मथ के घी के मोयन देके बनावल। इ पांच पीढ़ी से माई-बहिन लोगन के संजोवल पवित्र स्वाद ह।',
+    elaichi_thekua_name: 'इलायची आ नारियल ठकुआ',
+    elaichi_thekua_desc: 'सिल्लोट पर कुटल इलायची क सुगंध आ गरी गोला क दरदरा कतरन से सजावल कड़क मीठा ठकुआ।',
+    elaichi_thekua_story: 'ई खास स्वाद नीम क छांह में छठ घाट पर माता जी लोगन क हाथ क कुटाई आ दुलार क याद दिलावेला।',
+    ajwain_nimki_name: 'सोंध नुनछुर अजवाइन निमकी',
+    ajwain_nimki_desc: 'कुरकुरी, परतदार तिकोन कटल पारम्परिक निमकी, अजवाइन आ सेंधा नमक क संतुलित सुगन्धित मेल। गरमा गरम चाय क संगी।',
+    ajwain_nimki_story: 'अजवाइन के हाथ से भुजला के बाद चक्की क छनल आटा में सान के १६ बेर मोड़ क खस्ता पापड़ी नियन बनावल गेल बा।',
+    masala_nimki_name: '१२-मसाला रिबन निमकी',
+    masala_nimki_desc: 'दादी माई के १२ मसाला छिड़क के बनावल लच्छेदार करारी निमकी। जीभ चटकार कर देवे वाली सोंधापन।',
+    masala_nimki_story: 'मसाला में अमचूर, खरल क मरीच, भुना जीरा आ काला नमक बा जेके जाता पर पीस के सहेजल जाला।',
+    spicy_nimki_name: 'चटकार तीखा गुंटूर निमकी',
+    spicy_nimki_desc: 'तीखा खोजी लोग खातिर विशेष! गुंटूर क लाल मिर्च आ हरी कुचलल मिर्च के देहात क मूंगफली तेल में छान के तैयार एकदम खस्ता निमकी।',
+    spicy_nimki_story: 'गाँव क तीखा हाट क नेह सुगन्ध। पट्टियों में हरी मिर्च क रस डालके सान्कल आटे क कमाल ह ई।',
   }
+};
+
+export const getLocalizedIngredient = (ingredient: string, lang: Language): string => {
+  const maps: Record<Language, Record<string, string>> = {
+    en: {},
+    hi: {
+      'Sehore Whole Wheat Flour': 'सेहोर चोकरयुक्त गेहूं का आटा',
+      'Organic sugarcane Jaggery (Gur)': 'जैविक गन्ने का कोल्हू गुड़',
+      'Cold-pressed Mustard Oil': 'कच्ची घानी सरसों का तेल',
+      'Green Fennel Seeds (Saunf)': 'मोटी हरी सौंफ',
+      'Water': 'शुद्ध जल',
+      'Premium MP Wheat Flour': 'प्रीमियम शरबती गेहूं का आटा',
+      'A2 Desi Ghee (Makkhan-fed cows)': 'ए२ गाय का देसी घी',
+      'Organic Sulphurless Sugar': 'जैविक सल्फर-रहित चीनी क खांड',
+      'Real Cardamom Pod Powder': 'ताजी कुटी हरी इलायची',
+      'Grated dry Coconut': 'कद्दूकस किया नारियल क लच्छे',
+      'Sujata Whole Wheat Flour': 'सुजाता गेहूं का दरदरा आटा',
+      'Fine sugar syrup': 'ठंडी चीनी क रसीली चाशनी',
+      'Desi Ghee': 'शुद्ध गाय का देसी घी',
+      'Hand-pounded Elaichi pods': 'हाथ से कुटी हरी इलायची',
+      'Dehydrated dry coconut chips': 'सूखे नारियल क चिप्स',
+      'Sieved Heritage Wheat Flour': 'पारंपरिक गेहूं का छना आटा',
+      'Cold-pressed Groundnut Oil for frying': 'कच्ची घानी मूंगफली का तेल',
+      'Roasted Ajwain (Carom seeds)': 'भुनी हुई हाजमा अजवाइन',
+      'Sendha Namak (Rock Salt)': 'आर्गेनिक सेंधा या समुद्री नमक',
+      'Desi Ghee (Moyen)': 'देसी घी का खस्ता मोयन',
+      'Heritage Wheat Flour': 'पारंपरिक गेहूं का आटा',
+      'Secret 12-Spice Powder (Black Pepper, Cumin, Amchoor, Asafetida, Ginger, Rock Salt, etc.)': 'दादी मां का गुप्त १२-मसालों का मिश्रण (काली मिर्च, जीरा, अमचूर, हींग, सौंठ आदि)',
+      'Groundnut Oil': 'कच्ची घानी मूंगफली का तेल',
+      'Wheat Flour': 'ताज़ा गेहूं का आटा',
+      'Guntur Sun-dried Chili Flakes': 'गुंटूर कड़क लाल मिर्च के फ्लेक्स',
+      'Fresh Green Chili Paste': 'ताजी हरी मिर्च का सोंधा पेस्ट',
+      'Cold-pressed Groundnut Oil': 'कच्ची घानी मूंगफली तेल',
+      'Handpicked Ajwain': 'हाथ से चुनी हुई अजवाइन',
+      'Rock Salt': 'सेंधा नमक'
+    },
+    bho: {
+      'Sehore Whole Wheat Flour': 'सेहोर क चोकरदार आटा',
+      'Organic sugarcane Jaggery (Gur)': 'जैविक कोल्हू का लाल गुड़',
+      'Cold-pressed Mustard Oil': 'घानी क कड़ू तेल',
+      'Green Fennel Seeds (Saunf)': 'सुगन्धित मोटी सौंफ',
+      'Water': 'साफ़ पानी',
+      'Premium MP Wheat Flour': 'शरबती पिसा गेहूं आटा',
+      'A2 Desi Ghee (Makkhan-fed cows)': 'पीला सुगन्धित देसी घी',
+      'Organic Sulphurless Sugar': 'जैविक चीनी क बूरा',
+      'Real Cardamom Pod Powder': 'खरल क कुटल इलायची',
+      'Grated dry Coconut': 'कद्दूकस नारियल',
+      'Sujata Whole Wheat Flour': 'सुजाता गेहूं क आटा',
+      'Fine sugar syrup': 'चीनी क रसीला घोल',
+      'Desi Ghee': 'गाय क देसी घी',
+      'Hand-pounded Elaichi pods': 'हाथ क कुटल इलायची',
+      'Dehydrated dry coconut chips': 'नारियल क चिप्स',
+      'Sieved Heritage Wheat Flour': 'गेहूं क छनल आटा',
+      'Cold-pressed Groundnut Oil for frying': 'घानी क बादाम तेल',
+      'Roasted Ajwain (Carom seeds)': 'भुजल हाजमा अजवाइन',
+      'Sendha Namak (Rock Salt)': 'सेंधा नमक',
+      'Desi Ghee (Moyen)': 'गाय घी क खस्ता मोयन',
+      'Heritage Wheat Flour': 'गेहूं क आटा',
+      'Secret 12-Spice Powder (Black Pepper, Cumin, Amchoor, Asafetida, Ginger, Rock Salt, etc.)': 'दादी माई क गुप्त १२-मसालों क मिश्रण (मरीच, जीरा, अमचूर, हींग, सोंठ)',
+      'Groundnut Oil': 'मूंगफली क तेल',
+      'Wheat Flour': 'गेहूं क आटा',
+      'Guntur Sun-dried Chili Flakes': 'गुंटूर क लाल मिर्च',
+      'Fresh Green Chili Paste': 'हरी मिर्च क पेस्ट',
+      'Cold-pressed Groundnut Oil': 'मूंगफली तेल',
+      'Handpicked Ajwain': 'चुनल अजवाइन',
+      'Rock Salt': 'सेंधा नून'
+    }
+  };
+  return maps[lang]?.[ingredient] || ingredient;
+};
+
+export const getLocalizedShelfLife = (shelfLife: string, lang: Language): string => {
+  const maps: Record<Language, Record<string, string>> = {
+    en: {},
+    hi: {
+      '45 Days (Store in cool, dry container)': '४५ दिन (हवाबंद डिब्बे में रखें)',
+      '60 Days': '६० दिन (ताज़गी बनी रहेगी)',
+      '45 Days': '४५ दिन',
+      '90 Days (Keep in Airtight Container)': '९० दिन (हवाबंद डिब्बे में रखें)',
+      '90 Days': '९० दिन',
+      '80 Days': '८० दिन'
+    },
+    bho: {
+      '45 Days (Store in cool, dry container)': '४५ दिन (सलीकेदार हवाबंद डिब्बा)',
+      '60 Days': '६० दिन ले एकदम ताज़ा',
+      '45 Days': '४५ दिन',
+      '90 Days (Keep in Airtight Container)': '९० दिन ले एकदम कड़क',
+      '90 Days': '९० दिन',
+      '80 Days': '८० दिन'
+    }
+  };
+  return maps[lang]?.[shelfLife] || shelfLife;
+};
+
+export const getLocalizedBadge = (badge: string, lang: Language): string => {
+  const maps: Record<Language, Record<string, string>> = {
+    en: {},
+    hi: {
+      'Pure Jaggery': 'शुद्ध गुड़',
+      'Wooden Sancha': 'लकड़ी का सांचा',
+      'Chhath Special Recipe': 'छठ पूजा विशेष विधि',
+      'Soft Crunchy': 'खस्ता और कुरकुरा',
+      'A2 Desi Ghee': 'ए२ देसी घी',
+      'Handcrafted': 'हाथ से बना',
+      'Zero Preservatives': 'हानिकारक केमिकल मुक्त',
+      'Rich & Flaky': 'दानेदार व परतदार',
+      'Elaichi Fragrant': 'इलायची खुशबू',
+      'No Palm Oil': 'पाम आयल मुक्त',
+      'Stone-pressed': 'सिल-बट्टा कुटी',
+      'Fiber Rich': 'फाइबर युक्त सेहतमंद',
+      'Very Crispy': 'बेहद खस्ता',
+      '16-Fold Flakiness': '१६ परतदार खस्ता',
+      'Digestive Ajwain': 'पाचक अजवाइन',
+      'Airtight Pack': 'हवाबंद पैकेजिंग',
+      'Grandma’s Masala': 'दादी का मसाला',
+      'Tangy & Spicy': 'चटपटा व तीखा',
+      'All Natural': '१००% प्राकृतिक',
+      'Teekha Spicy': 'चटपटा तीखा घान',
+      'Infused Chilies': 'सूखी मिर्च फ्लेक्स',
+      'No Artificial Colors': 'कृत्रिम रंग मुक्त',
+      'Immunity Spices': 'गुणकारी मसाले'
+    },
+    bho: {
+      'Pure Jaggery': 'शुद्ध गुड़',
+      'Wooden Sancha': 'काठ के सांचा',
+      'Chhath Special Recipe': 'छठ मइया प्रसाद विधि',
+      'Soft Crunchy': 'खस्ता आ कुरकुरा',
+      'A2 Desi Ghee': 'ए२ देसी घी',
+      'Handcrafted': 'हाथ के गढ़ल',
+      'Zero Preservatives': 'कौनों प्रिजर्वेटिव ना',
+      'Rich & Flaky': 'दानेदार व कड़क',
+      'Elaichi Fragrant': 'इलायची सुगन्ध',
+      'No Palm Oil': 'पाम आयल ना',
+      'Stone-pressed': 'सिलौट पर पीसल',
+      'Fiber Rich': 'ताकत से भरपूर',
+      'Very Crispy': 'एकदम कुरकुरा',
+      '16-Fold Flakiness': '१६ परतदार खस्ता',
+      'Digestive Ajwain': 'हाजमा अजवाइन',
+      'Airtight Pack': 'सलीकेदार डिब्बा',
+      'Grandma’s Masala': 'दादी मां के मसाला',
+      'Tangy & Spicy': 'नुनछुर आ चटकार',
+      'All Natural': '१००% प्राकृतिक सुगन्ध',
+      'Teekha Spicy': 'तीखा चटकार घान',
+      'Infused Chilies': 'मिर्च क फ्लेक्स',
+      'No Artificial Colors': 'कौनों रंग ना',
+      'Immunity Spices': 'हल्दी-मरीच गुण'
+    }
+  };
+  return maps[lang]?.[badge] || badge;
 };
