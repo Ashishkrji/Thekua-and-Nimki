@@ -13,9 +13,9 @@ export const PRODUCTS: Product[] = [
     reviewCount: 342,
     unit: 'Pack of 350g',
     images: [
+      'https://images.unsplash.com/photo-1548365316-160adfec83d5?auto=format&fit=crop&w=600&q=80',
       'https://images.unsplash.com/photo-1600431521340-491eca880813?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=600&q=80'
+      'https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80'
     ],
     ingredients: ['Sehore Whole Wheat Flour', 'Organic sugarcane Jaggery (Gur)', 'Cold-pressed Mustard Oil', 'Green Fennel Seeds (Saunf)', 'Water'],
     shelfLife: '45 Days (Store in cool, dry container)',
@@ -40,9 +40,9 @@ export const PRODUCTS: Product[] = [
     reviewCount: 418,
     unit: 'Pack of 350g',
     images: [
-      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80'
+      'https://images.unsplash.com/photo-1600431521340-491eca880813?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1621447504364-b37fe5d8be42?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1548365316-160adfec83d5?auto=format&fit=crop&w=600&q=80'
     ],
     ingredients: ['Premium MP Wheat Flour', 'A2 Desi Ghee (Makkhan-fed cows)', 'Organic Sulphurless Sugar', 'Real Cardamom Pod Powder', 'Grated dry Coconut'],
     shelfLife: '60 Days',
@@ -67,9 +67,9 @@ export const PRODUCTS: Product[] = [
     reviewCount: 156,
     unit: 'Pack of 350g',
     images: [
-      'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1600431521340-491eca880813?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80'
+      'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=600&q=80'
     ],
     ingredients: ['Sujata Whole Wheat Flour', 'Fine sugar syrup', 'Desi Ghee', 'Hand-pounded Elaichi pods', 'Dehydrated dry coconut chips'],
     shelfLife: '45 Days',
@@ -94,9 +94,9 @@ export const PRODUCTS: Product[] = [
     reviewCount: 289,
     unit: 'Pack of 250g',
     images: [
-      'https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80'
+      'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1601050690597-df056fb49785?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80'
     ],
     ingredients: ['Sieved Heritage Wheat Flour', 'Cold-pressed Groundnut Oil for frying', 'Roasted Ajwain (Carom seeds)', 'Sendha Namak (Rock Salt)', 'Desi Ghee (Moyen)'],
     shelfLife: '90 Days (Keep in Airtight Container)',
@@ -121,9 +121,9 @@ export const PRODUCTS: Product[] = [
     reviewCount: 198,
     unit: 'Pack of 250g',
     images: [
-      'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80'
+      'https://images.unsplash.com/photo-1601050690597-df056fb49785?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=600&q=80'
     ],
     ingredients: ['Heritage Wheat Flour', 'Secret 12-Spice Powder (Black Pepper, Cumin, Amchoor, Asafetida, Ginger, Rock Salt, etc.)', 'Groundnut Oil', 'Desi Ghee (Moyen)'],
     shelfLife: '90 Days',
@@ -148,8 +148,8 @@ export const PRODUCTS: Product[] = [
     unit: 'Pack of 250g',
     images: [
       'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=600&q=80'
+      'https://images.unsplash.com/photo-1601050690597-df056fb49785?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80'
     ],
     ingredients: ['Wheat Flour', 'Guntur Sun-dried Chili Flakes', 'Fresh Green Chili Paste', 'Cold-pressed Groundnut Oil', 'Desi Ghee', 'Handpicked Ajwain', 'Rock Salt'],
     shelfLife: '80 Days',
